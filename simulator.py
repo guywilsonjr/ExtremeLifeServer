@@ -6,6 +6,7 @@ GRID_LENGTH = 10
 TeamGrid = List[List[int]]
 
 
+@dataclass
 class Cell:
     x_loc: int
     y_loc: int
@@ -41,7 +42,7 @@ class Cell:
         else:
             return 1
 
-
+@dataclass
 class CellGrid(List[List[Cell]]):
     def get_team_grid(self) -> TeamGrid:
         return [[cell.team_number for cell in row] for row in self]

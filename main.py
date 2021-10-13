@@ -9,7 +9,7 @@ sim = simulator.Simulator()
 
 
 @app.get("/")
-def get_initial_game_state() -> Dict[str, str]:
+def healthcheck() -> Dict[str, str]:
     return {'status': 'healthy'}
 
 
@@ -20,7 +20,7 @@ def get_initial_game_state() -> GameState:
 
 
 @app.get("/state")
-def get_initial_game_state() -> GameState:
+def get_latest_game_state() -> GameState:
     return sim.latest_state
 
 
