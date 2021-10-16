@@ -127,3 +127,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Local documentation (just putting notes for safe keeping here)
+.localdoc
