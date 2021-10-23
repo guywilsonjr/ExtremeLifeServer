@@ -2,45 +2,11 @@ import copy
 from pydantic.dataclasses import dataclass
 from typing import List, Set
 
+from cells.cell import Cell
+
 GRID_LENGTH = 10
-TeamGrid = List[List[int]]
 
 
-@dataclass
-class Cell:
-    x_loc: int
-    y_loc: int
-    team_number: int
-
-    def __init__(self, x_loc, y_loc, team_number):
-        self.x_loc = x_loc
-        self.y_loc = y_loc
-        self.team_number = team_number
-
-    def get_neighbors(self, grid: TeamGrid) -> Set:
-        # Search the 3x3 grid around cell or 3x2 or 2x2 if at an edge or corner
-        x_start = self.x_loc - 1 if self.x_loc > 0 else self.x_loc
-        x_end = self.x_loc + 1 if self.x_loc < GRID_LENGTH - 1 else self.x_loc
-        y_start = self.y_loc - 1 if self.y_loc > 0 else self.y_loc
-        y_end = self.y_loc + 1 if self.y_loc < GRID_LENGTH - 1 else self.y_loc
-
-        neighbors = grid[x_start:x_end, y_start:y_end]
-        # Remove self
-        neighbors.remove(self)
-        return neighbors
-
-    def simulate_step(self, grid: TeamGrid) -> int:
-        neighbors = self.get_neighbors(grid)
-        num_neighbors = len(neighbors)
-        if self.team_number == 0:
-            return 0
-
-        if num_neighbors < 2:
-            return 0
-        elif num_neighbors > 4:
-            return 0
-        else:
-            return 1
 
 @dataclass
 class CellGrid(List[List[Cell]]):
