@@ -1,5 +1,7 @@
 import copy
-from pydantic.dataclasses import dataclass
+from dataclasses import dataclass
+from typing import List
+
 from cells.cell import Cell, CellGrid, CellEffectType
 import numpy as np
 
@@ -23,12 +25,19 @@ class GameState:
 
 
 class Simulator:
+
     def __init__(self):
         self.game_states = []
         initial_state = GameState()
         self.current_turn = 0
         self.latest_state = initial_state
         self.game_states.append(initial_state)
+
+    def print_state(self, state: GameState):
+        print()
+        for row in state.cell_grid:
+            print(row)
+        print()
 
     @staticmethod
     def transition_state(game_state: GameState) -> GameState:
@@ -68,3 +77,11 @@ class Simulator:
         new_game_state.team_grid = self.get_simulated_cell_transitions(new_game_state.get_cell_grid())
         self.latest_state = new_game_state
         self.game_states.append(self.latest_state)
+
+
+class Game:
+    player1: str
+    player2: str
+    game_states: List[GameState]
+    current_state: GameState
+
