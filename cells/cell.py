@@ -1,7 +1,9 @@
 from abc import abstractmethod, ABC
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Set
+from typing import Set, Any
+import pydantic
+import numpy as np
 import numpy.typing as npt
 
 
@@ -74,4 +76,16 @@ class Cell:
         pass
 
 
-CellGrid = npt.NDArray[Cell]
+@pydantic.dataclasses.dataclass
+class CellGrid(np.ndarray):
+    class Config:
+        aribtrary_types_allowed = True
+    '''
+    def __get_validators__():
+        yield
+
+    def __get_schema__():
+        yield
+    '''
+    def validate(cls, input: Any):
+        return input

@@ -1,10 +1,11 @@
 import copy
-from dataclasses import dataclass
+from pydantic.dataclasses import dataclass
 from typing import List
 
 from cells.cell import Cell, CellGrid, CellEffectType
 import numpy as np
 
+from profile import Profile
 
 GRID_LENGTH = 10
 EMPTY_CELL: Cell = None
@@ -80,8 +81,8 @@ class Simulator:
 
 
 class Game:
-    player1: str
-    player2: str
+    player1: Profile
+    player2: Profile
     game_states: List[GameState]
     current_state: GameState
 

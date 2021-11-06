@@ -1,5 +1,11 @@
-from cells.cell_types import AttackCell, AttackCellData
+import requests
+
+from cells.cell_types import AttackCellData
 from simulator import GameState, Simulator, EMPTY_CELL
+
+
+
+testun1 = 'test-user-1'
 
 
 def test_cell():
@@ -17,4 +23,9 @@ def test_sim():
     sim.print_state(empty_state)
 
 
+def test_profile():
+    resp = requests.post('localhost:8000/profile', data={'username': testun1})
+    assert resp.json()['username'] == 'test-user-1'
+    resp = requests.get('localhost:8000/profile')
+    assert any(filter(lambda profile: profile['username'] == 'test-user-1', resp.json()))
 
