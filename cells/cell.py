@@ -1,7 +1,9 @@
 from abc import abstractmethod, ABC
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Set
+from typing import Set, Any, List
+import pydantic
+import numpy as np
 import numpy.typing as npt
 
 
@@ -74,4 +76,7 @@ class Cell:
         pass
 
 
-CellGrid = npt.NDArray[Cell]
+@pydantic.dataclasses.dataclass
+class CellGrid(List[List[float]]):
+    class Config:
+        aribtrary_types_allowed = True
