@@ -1,13 +1,23 @@
 import copy
-from dataclasses import dataclass
+import dataclasses
+
+from pydantic.dataclasses import dataclass
 from typing import List
 
 from cells.cell import Cell, CellGrid, CellEffectType
 import numpy as np
-
+from fastapi import File
+from profile import Profile
 
 GRID_LENGTH = 10
 EMPTY_CELL: Cell = None
+
+
+@dataclasses.dataclass
+class ActionScript:
+    profile: Profile
+    script_name: str
+    file: File
 
 
 @dataclass
@@ -25,7 +35,6 @@ class GameState:
 
 
 class Simulator:
-
     def __init__(self):
         self.game_states = []
         initial_state = GameState()
@@ -79,9 +88,11 @@ class Simulator:
         self.game_states.append(self.latest_state)
 
 
+@dataclass
 class Game:
-    player1: str
-    player2: str
+    game_id: str
+    player1: Profile
+    player2: Profile
     game_states: List[GameState]
     current_state: GameState
 
