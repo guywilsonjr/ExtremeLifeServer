@@ -1,5 +1,5 @@
 import time
-from typing import Dict
+from typing import Dict, List
 
 from fastapi import FastAPI, File, UploadFile
 
@@ -50,8 +50,14 @@ def list_profiles() -> GameState:
 
 
 @app.post("/actionscript")
-def add_actionscript(file: UploadFile = File(...)) -> None:
-    return None
+def add_actionscript(profile: Profile, script_name: str, file: UploadFile = File(...)) -> None:
+    ac = simulator.ActionScript(profile, script_name, file)
+    dm.add_action_script(db, ac)
+
+
+@app.get("/actionscript")
+def list_actionscripts() -> List[simulator.ActionScript]:
+    return dm.list_action_scripts(db)
 
 
 """

@@ -15,6 +15,7 @@ EMPTY_CELL: Cell = None
 
 @dataclasses.dataclass
 class ActionScript:
+    profile: Profile
     script_name: str
     file: File
 
