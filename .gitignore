@@ -114,6 +114,9 @@ venv.bak/
 .spyderproject
 .spyproject
 
+# VSCode
+.vscode/
+
 # Rope project settings
 .ropeproject
 
@@ -130,3 +133,4 @@ dmypy.json
 
 # Local documentation (just putting notes for safe keeping here)
 .localdoc
+

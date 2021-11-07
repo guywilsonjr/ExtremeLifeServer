@@ -1,0 +1,7 @@
+[DEFAULT]
+host=localhost
+port=
+dbname=
+user=chatmanager
+password=chatpassword
+
