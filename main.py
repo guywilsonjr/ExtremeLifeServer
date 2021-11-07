@@ -1,6 +1,5 @@
 import time
 from typing import Dict, List
-
 from fastapi import FastAPI, File, UploadFile
 
 import datamanager as dm
@@ -58,6 +57,7 @@ def add_actionscript(profile: Profile, script_name: str, file: UploadFile = File
 @app.get("/actionscript")
 def list_actionscripts() -> List[simulator.ActionScript]:
     return dm.list_action_scripts(db)
+
 
 
 """
