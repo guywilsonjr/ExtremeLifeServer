@@ -3,3 +3,4 @@ uvicorn
 pydantic
 numpy
 tinydb
+python-multipart

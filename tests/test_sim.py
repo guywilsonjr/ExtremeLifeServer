@@ -1,5 +1,7 @@
 import requests
+from fastapi.testclient import TestClient
 
+from main import app
 from cells.cell_types import AttackCellData
 from simulator import GameState, Simulator, EMPTY_CELL
 
@@ -24,8 +26,14 @@ def test_sim():
 
 
 def test_profile():
-    resp = requests.post('localhost:8000/profile', data={'username': testun1})
-    assert resp.json()['username'] == 'test-user-1'
-    resp = requests.get('localhost:8000/profile')
-    assert any(filter(lambda profile: profile['username'] == 'test-user-1', resp.json()))
+    client = TestClient(app)
+    resp = client.post("/profile/test-user-1")
+    data = resp.json()
+    print(data)
+    assert data['username'] == 'test-user-1'
+    resp = client.get("/profile")
+    profile_list = resp.json()
+    print(profile_list)
+    assert any(list(filter(lambda profile: profile['username'] == 'test-user-1', profile_list)))
+
 

@@ -1,5 +1,7 @@
 import os
 import time
+from dataclasses import asdict
+
 from tinydb import TinyDB
 from profile import Profile
 
@@ -12,7 +14,7 @@ PROFILE_TN = 'profile'
 
 def create_player_profile(db: TinyDB, profile: Profile):
     profile_table = db.table(PROFILE_TN)
-    profile_table.insert(profile)
+    profile_table.insert(asdict(profile))
 
 
 def list_player_profiles(db: TinyDB):
@@ -22,4 +24,4 @@ def list_player_profiles(db: TinyDB):
 
 def start_new_db() -> TinyDB:
     cur_time = int(time.time())
-    return TinyDB(f'.db/data_{cur_time}.json')
+    return TinyDB(f'.db/data_0.json')
