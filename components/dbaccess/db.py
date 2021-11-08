@@ -16,13 +16,9 @@ def setup_db(config_path: str):
     if not environ.get("CHAT_HOST"):
         config = parse_configuration_file(config_path)
         environ["CHAT_HOST"] = config.get("host", "Not Set")
-        # DBNAME = config.get("dbname")
         environ["CHAT_DBNAME"] = config.get("dbname")
-        # PORT = config.get("port")
         environ["CHAT_PORT"] = config.get("port")
-        # USER = config.get("user")
         environ["CHAT_USER"] = config.get("user")
-        # PASSWORD = config.get("password")
         environ["CHAT_PASSWORD"] = config.get("password")
     
     if environ["CHAT_HOST"] == "Not Set":
