@@ -4,3 +4,7 @@ class ChannelNameError(Exception):
 
 class SessionNameNotFound(Exception):
     """Throw if session name not found."""
+
+
+class HostNotSet(Exception):
+    """Throw if host credential values are not set."""

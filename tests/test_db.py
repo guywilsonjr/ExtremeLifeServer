@@ -1,6 +1,7 @@
 import pytest
 import logging
 from components.dbaccess import db
+from os import environ
 
 
 logging.getLogger().setLevel(logging.DEBUG)
@@ -9,12 +10,24 @@ logging.getLogger().setLevel(logging.DEBUG)
 def test_setup_db_pass():
     # Arrange
     config_file = "configs/db_config"
-    expected_result = {"host": "localhost", "port": '', "dbname": '',
+    expected_result = {"host": "localhost", "port": '', "database": '',
                        "user": 'chatmanager', "password": 'chatpassword'}
+    db.setup_db(config_file)
     # Act
-    output = db.setup_db(config_file)
+    output = db._get_chat_db_config_from_environ()
     # Assert
     assert output == expected_result
+    # Cleanup
+    reset_environ_db_chat_config()
+
+
+def reset_environ_db_chat_config():
+    """Remove values from environment variables after test."""
+    del environ["CHAT_HOST"]
+    del environ["CHAT_DBNAME"]
+    del environ["CHAT_USER"]
+    del environ["CHAT_PASSWORD"]
+    del environ["CHAT_PORT"]
 
 
 def test_execute_validquery(setup_db):

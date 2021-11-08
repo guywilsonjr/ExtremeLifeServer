@@ -5,37 +5,54 @@ import configparser
 import logging
 from typing import List, Any, Dict
 from components.dbaccess import exceptions
-# Using RDS database.
-
-# Get db info from protected file
-HOST = None
-DBNAME = None
-PORT = None
-# Maybe use IP-based security instead (or both).
-USER = None
-PASSWORD = None
+from os import environ
 
 
-def setup_db(config_path: str) -> Dict[str, str]:
+def setup_db(config_path: str):
     """Set DB config from file."""
-    global HOST, DBNAME, PORT, USER, PASSWORD
+    # Maybe use IP-based security instead (or both).
+    # Save host info to environment.
+    # Targetting to use RDS database.
+    if not environ.get("CHAT_HOST"):
+        config = parse_configuration_file(config_path)
+        environ["CHAT_HOST"] = config.get("host", "Not Set")
+        # DBNAME = config.get("dbname")
+        environ["CHAT_DBNAME"] = config.get("dbname")
+        # PORT = config.get("port")
+        environ["CHAT_PORT"] = config.get("port")
+        # USER = config.get("user")
+        environ["CHAT_USER"] = config.get("user")
+        # PASSWORD = config.get("password")
+        environ["CHAT_PASSWORD"] = config.get("password")
+    
+    if environ["CHAT_HOST"] == "Not Set":
+        raise Exception("Host for chat database is not set.")
+
+
+def parse_configuration_file(config_path: str) -> Dict[str, str]:
+    """Open configuration file at given path and return values as a dictionary."""
     config = dict()
     parser = configparser.ConfigParser()
     parser.read(config_path)
     for s in parser:
         for c in parser[s]:
             config[c] = parser[s][c]
-    HOST = config.get("host")
-    DBNAME = config.get("dbname")
-    PORT = config.get("port")
-    USER = config.get("user")
-    PASSWORD = config.get("password")
     return config
+
+
+def _get_chat_db_config_from_environ():
+    return {
+        'host': environ["CHAT_HOST"],
+        "user": environ["CHAT_USER"],
+        "database": environ["CHAT_DBNAME"],
+        "password": environ["CHAT_PASSWORD"],
+        "port": environ["CHAT_PORT"]
+    }
 
 
 @ contextlib.contextmanager
 def execute(query: str, params: List[Any]=[], commit: bool=None):
-    with pymysql.connect(host=HOST, database=DBNAME, user=USER, password=PASSWORD, port=PORT) as conn:
+    with pymysql.connect(**_get_chat_db_config_from_environ()) as conn:
         with conn.cursor() as curs:
             query = curs.mogrify(query, params)
             logging.debug("QUERY: %s" % query)
