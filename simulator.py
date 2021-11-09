@@ -2,7 +2,7 @@ import copy
 import dataclasses
 
 from pydantic.dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 
 from cells.cell import Cell, CellGrid, CellEffectType
 import numpy as np
@@ -89,10 +89,16 @@ class Simulator:
 
 
 @dataclass
-class Game:
-    game_id: str
+class NewGameRequest:
     player1: Profile
     player2: Profile
-    game_states: List[GameState]
-    current_state: GameState
+
+
+@dataclass
+class Game:
+    game_id: int
+    player1: Profile
+    player2: Profile
+    game_states: Optional[List[GameState]]
+    current_state: Optional[GameState]
 

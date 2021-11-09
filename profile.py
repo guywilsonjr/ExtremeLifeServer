@@ -1,10 +1,10 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 
 
 @dataclass
 class Profile:
     username: str
     userid: int
-    games: List[str]
+    games: Optional[List[int]] = None
 

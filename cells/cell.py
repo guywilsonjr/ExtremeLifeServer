@@ -77,6 +77,5 @@ class Cell:
 
 
 @pydantic.dataclasses.dataclass
-class CellGrid(List[List[float]]):
-    class Config:
-        aribtrary_types_allowed = True
+class CellGrid(List[List[Cell]]):
+    pass

@@ -1,3 +1,6 @@
+# db files
+.db/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -133,4 +136,3 @@ dmypy.json
 
 # Local documentation (just putting notes for safe keeping here)
 .localdoc
-
