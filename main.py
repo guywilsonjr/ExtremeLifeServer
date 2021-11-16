@@ -18,23 +18,6 @@ def healthcheck() -> Dict[str, str]:
     return {'status': 'healthy'}
 
 
-@app.get("/state/initial")
-def get_initial_game_state() -> GameState:
-    sim = Simulator()
-    return sim.latest_state
-
-
-@app.get("/state")
-def get_latest_game_state() -> GameState:
-    return sim.latest_state
-
-
-@app.get("/simulate", response_model=GameState)
-def simulate_state(game_state: GameState) -> GameState:
-    sim.simulate_step(game_state)
-    return sim.latest_state
-
-
 @app.post("/profile/{username}", response_model=Profile)
 def create_user(username: str) -> Profile:
     userid = int(time.time())
