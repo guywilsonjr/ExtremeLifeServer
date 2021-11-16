@@ -48,7 +48,7 @@ def list_profiles() -> GameState:
     return dm.list_player_profiles(db)
 
 
-@app.post("/actionscript")
+@app.post("/validatescript")
 def add_actionscript(profile: Profile, script_name: str, file: UploadFile = File(...)) -> None:
     ac = ActionScript(profile, script_name, file)
     dm.create_actionscript(db, ac)

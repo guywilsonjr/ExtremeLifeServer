@@ -7,4 +7,3 @@ class Profile:
     username: str
     userid: int
     games: Optional[List[int]] = None
-
