@@ -4,6 +4,7 @@ from typing import List, Optional
 
 @dataclass
 class Profile:
-    username: str
     userid: int
+    username: str
     games: Optional[List[int]] = None
+

@@ -3,7 +3,7 @@ import time
 from dataclasses import asdict
 from tinydb import TinyDB
 from profile import Profile
-from simulator import ActionScript, Game
+from simulator import ActionScript, GameData
 
 DB_LOCATION = '.db/'
 os.makedirs(DB_LOCATION) if not os.path.exists(DB_LOCATION) else None
@@ -30,9 +30,11 @@ def create_actionscript(db: TinyDB, actionscript: ActionScript):
     create_entity(db, actionscript, ACTIONSCRIPT_TN)
 
 
-def create_game(db: TinyDB, game: Game):
+def create_game(db: TinyDB, game: GameData):
     create_entity(db, game, GAME_TN)
 
+def get_game(db: TinyDB, game_id: int):
+    return db.table(GAME_TN).get(f'game_id = {game_id}')
 
 def list_player_profiles(db: TinyDB):
     return list_entity(db, PROFILE_TN)
