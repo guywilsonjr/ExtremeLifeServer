@@ -99,6 +99,5 @@ class Game:
     game_id: int
     player1: Profile
     player2: Profile
-    game_states: Optional[List[GameState]]
     current_state: Optional[GameState]
 
