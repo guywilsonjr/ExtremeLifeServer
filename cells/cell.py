@@ -1,9 +1,7 @@
 from abc import abstractmethod, ABC
-from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Set, Any, List
-import pydantic
-import numpy as np
+from typing import Set, List, Optional
+from pydantic.dataclasses import dataclass
 import numpy.typing as npt
 
 
@@ -37,8 +35,9 @@ class CellData(ABC):
     antivirality: float = 1.0
 
 
-CellDataGrid = npt.NDArray[CellData]
-
+EMPTY_CELL_DATA = None
+CellGrid = npt.NDArray[CellData]
+CellGridData = List[List[Optional[CellData]]]
 
 class Cell:
     def __init__(self, data: CellData):
@@ -51,7 +50,7 @@ class Cell:
         self.y_start = self.data.y_loc - 1 if self.data.y_loc > 0 else self.data.y_loc
         self.y_end = self.data.y_loc + 1 if self.data.y_loc < self.data.grid_height - 1 else self.data.y_loc
 
-    def _set_neighbors(self, grid: CellDataGrid) -> Set[CellData]:
+    def _set_neighbors(self, grid: CellGrid) -> Set[CellData]:
         # Search the 3x3 grid around cell or 3x2 or 2x2 if at an edge or corner
         self.neighbors = {cell for cell_list in grid[self.x_start:self.x_end, self.y_start:self.y_end] for cell in cell_list}
         self.empty_neighbors = {cell for cell in self.neighbors if cell is None}
@@ -72,10 +71,8 @@ class Cell:
         return self.empty_neighbors.pop().data if self.empty_neighbors else None
 
     @abstractmethod
-    def simulate_step(self, grid: CellDataGrid) -> CellEffect:
+    def simulate_step(self, grid: CellGrid) -> CellEffect:
         pass
 
+EMPTY_CELL: Cell = None
 
-@pydantic.dataclasses.dataclass
-class CellGrid(List[List[Cell]]):
-    pass

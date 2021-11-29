@@ -1,58 +1,9 @@
 import copy
-import dataclasses
 
-from pydantic.dataclasses import dataclass
-from typing import List, Optional
-
-from cells.cell import Cell, CellGrid, CellEffectType, CellData
+from cells.cell import CellEffectType, CellData
 import numpy as np
-from fastapi import File
-from profile import Profile
 
-GRID_LENGTH = 10
-EMPTY_CELL: Cell = None
-
-
-@dataclasses.dataclass
-class ActionScript:
-    player_id: int
-    script_name: str
-    file: File
-
-
-@dataclass
-class ActionScriptResponse:
-    profile: Profile
-    script_name: str
-
-
-@dataclass
-class GameState:
-    current_turn: int
-    cell_grid: List[List[CellData]]
-
-    def __init__(self):
-        # Initialize a GRID_LENGTH x GRID_LENGTH grid of empty cells
-        self.cell_grid = [[EMPTY_CELL for y_loc in range(GRID_LENGTH)] for x_loc in range(GRID_LENGTH)]
-        self.current_turn = 0
-
-    def get_cell_grid(self) -> CellGrid:
-        return self.cell_grid
-
-
-@dataclass
-class NewGameRequest:
-    player1_id: int
-    player2_id: int
-    player1_actionscript_name: str
-    player2_actionscript_name: str
-
-
-@dataclass
-class GameData:
-    game_id: int
-    player_data: NewGameRequest
-    current_state: GameState
+from model import GameState, GameData
 
 
 class Simulator:
@@ -62,6 +13,7 @@ class Simulator:
         self.current_turn = 0
         self.latest_state = initial_state
         self.game_states.append(initial_state)
+
 
     def print_state(self, state: GameState):
         print()
