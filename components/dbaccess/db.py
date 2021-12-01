@@ -3,9 +3,9 @@ import pymysql
 import contextlib
 import configparser
 import logging
+from os import environ
 from typing import List, Any, Dict
 from components.dbaccess import exceptions
-from os import environ
 
 
 def setup_db(config_path: str):
@@ -33,6 +33,7 @@ def parse_configuration_file(config_path: str) -> Dict[str, str]:
     for s in parser:
         for c in parser[s]:
             config[c] = parser[s][c]
+    print(repr(config))
     return config
 
 
@@ -59,13 +60,19 @@ def execute(query: str, params: List[Any]=[], commit: bool=None):
 
 
 def get_service_keys() -> str:
+    """Query chat configuration table for chat service keys."""
     setup_db('configs/db_config')
-    with execute("SELECT var_value FROM chat.configurations "
-                 "WHERE var_name='service_keys' LIMIT 1;") as curs:
+    with execute(
+            "SELECT var_value FROM chat.configurations "
+            "WHERE var_name='service_keys' LIMIT 1;") as curs:
         return curs.fetchone()[0]
 
 
 def get_game_session_id(sessionname: str) -> str:
+    """Query game sessions table for session ID using session name.
+    We could change this to only receive the session ID from front end request, if Guy wants
+    store game data to TinyDB.
+    """
     with execute("SELECT id FROM game.sessions WHERE session_name=%s", [sessionname]) as db:
         try:
             sid = db.fetchone()[0]
@@ -76,16 +83,25 @@ def get_game_session_id(sessionname: str) -> str:
 
 
 def get_channel_name_using_session_id(sessionid: str) -> str:
+    """Query chat channels table for channel name using session ID."""
     try:
         with execute("SELECT channel_name FROM chat.channels WHERE sid=%s;", 
                         [sessionid]) as db:
-            return db.fetchone()[0]
-            # channel_name = res[0] if res else None
+            channel_name = db.fetchone()[0]
+            logging.debug("Channel Name: %s" % channel_name)
+            return channel_name
     except TypeError as err:
         logging.debug(err)
+        raise exceptions.ChannelNameError("Session ID not found: %s" % sessionid)
 
 
 def insert_chat_channel(sessionid: str, channelname: str, commit: bool=True) -> str:
-    with execute("INSERT INTO chat.channels (sid, channel_name) VALUES (%s, %s);", 
-                 [sessionid, channelname], commit):
-        return channelname
+    """Insert chat channel to chat channels table when new channel is created."""
+    try:
+        with execute("INSERT INTO chat.channels (sid, channel_name) VALUES (%s, %s);", 
+                    [sessionid, channelname], commit):
+            return channelname
+    except Exception as ex:
+        logging.error("Exception while inserting chat channel: %s" % ex)
+        raise exceptions.DatabaseError(
+            "Session ID: %s, Channel Name: %s, Commit: %s" % (sessionid, channelname, commit))

@@ -8,3 +8,7 @@ class SessionNameNotFound(Exception):
 
 class HostNotSet(Exception):
     """Throw if host credential values are not set."""
+
+
+class DatabaseError(Exception):
+    """Throw when unexpected database error is raised."""

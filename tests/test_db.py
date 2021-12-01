@@ -10,8 +10,12 @@ logging.getLogger().setLevel(logging.DEBUG)
 def test_setup_db_pass():
     # Arrange
     config_file = "configs/db_config"
-    expected_result = {"host": "localhost", "port": '', "database": '',
-                       "user": 'chatmanager', "password": 'chatpassword'}
+    expected_result = {
+        "host": "localhost", 
+        "port": '', 
+        "database": '',
+        "user": "chatmanager", 
+        "password": "chatpassword"}
     db.setup_db(config_file)
     # Act
     output = db._get_chat_db_config_from_environ()

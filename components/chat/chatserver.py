@@ -12,6 +12,7 @@ NUM_OF_ATTEMPTS = 3
 
 def get_channel(session_name: str) -> str:
     """Query DB with sessionid to get channel name, if none create."""
+    # we can probably cut out session name and just recieve session id/name for simplicity.
     sid = db.get_game_session_id(session_name)
 
     channel_name = db.get_channel_name_using_session_id(sid)
