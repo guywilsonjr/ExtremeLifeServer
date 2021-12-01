@@ -33,6 +33,7 @@ def parse_configuration_file(config_path: str) -> Dict[str, str]:
     for s in parser:
         for c in parser[s]:
             config[c] = parser[s][c]
+    print(repr(config))
     return config
 
 
