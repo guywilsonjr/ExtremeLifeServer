@@ -1,5 +1,7 @@
 # db files
 .db/
+.db/data_0.json
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
