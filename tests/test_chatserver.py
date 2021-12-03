@@ -110,3 +110,8 @@ def ensure_channel_name_already_exists(session_id, channel_name):
     with db.execute("DELETE FROM chat.channels WHERE sid=%s AND channel_name=%s;",
                     [session_id, channel_name], True) as curs:
         """curs.fetchall()"""
+
+
+def delete_channel_name(session_id):
+    with db.execute("DELETE FROM chat.channels WHERE sid=%s", [session_id], True):
+        return session_id
