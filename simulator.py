@@ -1,37 +1,9 @@
 import copy
-import dataclasses
 
-from pydantic.dataclasses import dataclass
-from typing import List, Optional
-
-from cells.cell import Cell, CellGrid, CellEffectType
+from cells.cell import CellEffectType, CellData
 import numpy as np
-from fastapi import File
-from profile import Profile
 
-GRID_LENGTH = 10
-EMPTY_CELL: Cell = None
-
-
-@dataclasses.dataclass
-class ActionScript:
-    profile: Profile
-    script_name: str
-    file: File
-
-
-@dataclass
-class GameState:
-    current_turn: int
-    cell_grid: CellGrid
-
-    def __init__(self):
-        # Initialize a GRID_LENGTH x GRID_LENGTH grid of empty cells
-        self.cell_grid = [[EMPTY_CELL for y_loc in range(GRID_LENGTH)] for x_loc in range(GRID_LENGTH)]
-        self.current_turn = 0
-
-    def get_cell_grid(self) -> CellGrid:
-        return self.cell_grid
+from model import GameState, GameData
 
 
 class Simulator:
@@ -41,6 +13,7 @@ class Simulator:
         self.current_turn = 0
         self.latest_state = initial_state
         self.game_states.append(initial_state)
+
 
     def print_state(self, state: GameState):
         print()
@@ -79,7 +52,8 @@ class Simulator:
 
         return attack_matrix
 
-    def simulate_step(self, game_state: GameState) -> GameState:
+    def simulate_step(self, game: GameData) -> GameData:
+        game_state = game
         game_state_copy = copy.deepcopy(game_state)
         # update game info then process each cell transition
         new_game_state = self.transition_state(game_state_copy)
@@ -88,17 +62,5 @@ class Simulator:
         self.game_states.append(self.latest_state)
 
 
-@dataclass
-class NewGameRequest:
-    player1: Profile
-    player2: Profile
 
-
-@dataclass
-class Game:
-    game_id: int
-    player1: Profile
-    player2: Profile
-    game_states: Optional[List[GameState]]
-    current_state: Optional[GameState]
 
