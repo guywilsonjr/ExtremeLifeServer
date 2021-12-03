@@ -59,37 +59,27 @@ def execute(query: str, params: List[Any]=[], commit: bool=None):
             conn.commit()
 
 
-def get_service_keys() -> str:
+def get_service_keys(channelname: str) -> str:
     """Query chat configuration table for chat service keys."""
     setup_db('configs/db_config')
     with execute(
-            "SELECT var_value FROM chat.configurations "
-            "WHERE var_name='service_keys' LIMIT 1;") as curs:
-        return curs.fetchone()[0]
-
-
-def get_game_session_id(sessionname: str) -> str:
-    """Query game sessions table for session ID using session name.
-    We could change this to only receive the session ID from front end request, if Guy wants
-    store game data to TinyDB.
-    """
-    with execute("SELECT id FROM game.sessions WHERE session_name=%s", [sessionname]) as db:
-        try:
-            sid = db.fetchone()[0]
-            logging.debug("Session ID: %s" % sid)
-            return sid
-        except TypeError as err:
-            raise exceptions.SessionNameNotFound("Session name not found: %s" % sessionname)
+            "SELECT var_value FROM chat.channels JOIN chat.configurations "
+            "WHERE var_name='service_keys' AND channel_name=%s LIMIT 1;",
+            [channelname]) as curs:
+        res = curs.fetchone()
+        if res:
+            return res[0]
+        print(res)
+    raise exceptions.InvalidKeyRequest("Something went wrong when requesting service keys.")
 
 
 def get_channel_name_using_session_id(sessionid: str) -> str:
     """Query chat channels table for channel name using session ID."""
     try:
-        with execute("SELECT channel_name FROM chat.channels WHERE sid=%s;", 
-                        [sessionid]) as db:
-            channel_name = db.fetchone()[0]
+        with execute("SELECT channel_name FROM chat.channels WHERE sid=%s;", [sessionid]) as db:
+            channel_name = db.fetchone()
             logging.debug("Channel Name: %s" % channel_name)
-            return channel_name
+            return channel_name[0]
     except TypeError as err:
         logging.debug(err)
         raise exceptions.ChannelNameError("Session ID not found: %s" % sessionid)
@@ -99,9 +89,19 @@ def insert_chat_channel(sessionid: str, channelname: str, commit: bool=True) -> 
     """Insert chat channel to chat channels table when new channel is created."""
     try:
         with execute("INSERT INTO chat.channels (sid, channel_name) VALUES (%s, %s);", 
-                    [sessionid, channelname], commit):
+                     [sessionid, channelname], commit):
             return channelname
     except Exception as ex:
         logging.error("Exception while inserting chat channel: %s" % ex)
         raise exceptions.DatabaseError(
             "Session ID: %s, Channel Name: %s, Commit: %s" % (sessionid, channelname, commit))
+
+
+def remove_chat_channel(sessionid: str) -> str:
+    """Remove channel associated to session ID."""
+    with execute("DELETE FROM chat.channels WHERE sid=%s "
+                    "RETURNING channel_name AS deleted_channel;", [sessionid], True) as curs:
+        res = curs.fetchall()
+    if res:
+        return res[0]
+    raise exceptions.SessionNameNotFound("Channel associated to the session ID was not found.")

@@ -3,7 +3,8 @@ from fastapi.testclient import TestClient
 
 from main import app
 from cells.cell_types import AttackCellData
-from simulator import GameState, Simulator, EMPTY_CELL
+from simulator import GameState, Simulator
+from cells.cell import EMPTY_CELL
 
 
 

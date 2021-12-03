@@ -12,3 +12,7 @@ class HostNotSet(Exception):
 
 class DatabaseError(Exception):
     """Throw when unexpected database error is raised."""
+    
+
+class InvalidKeyRequest(Exception):
+    """Throw when key request is invalid."""
