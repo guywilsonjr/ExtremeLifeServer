@@ -8,7 +8,6 @@ gamestate = model.GameState()
 
 logging.getLogger().setLevel(logging.DEBUG)
 
-
 def test_get_game():
     # Arrange
     game_id = 0
@@ -54,7 +53,6 @@ def test_get_game():
     # Clean up
     print(f"removed game ids: {dm.remove_game(game_id)}")
 
-
 def test_validate_game_id_validated():
     # Arrange
     game_id = 0
@@ -69,7 +67,6 @@ def test_validate_game_id_validated():
     # Clean up
     print(f"removed game ids: {dm.remove_game(game_id)}")
 
-
 def test_validate_game_id_invalidated():
     # Arrange
     game_id = 0
@@ -82,7 +79,6 @@ def test_validate_game_id_invalidated():
     # Assert
     assert output_value == expected_value
     # Clean up
-
 
 def test_get_games():
     dm = testmodule.DataManager()

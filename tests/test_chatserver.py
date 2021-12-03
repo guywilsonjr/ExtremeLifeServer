@@ -76,7 +76,6 @@ def ensure_session_not_found(session_id: int):
     from datamanager import DataManager
     logging.debug("Games removed: %s" % DataManager().remove_game(session_id))
 
-
 @pytest.fixture
 def mock_game_session(game_id: int):
     from datamanager import DataManager
