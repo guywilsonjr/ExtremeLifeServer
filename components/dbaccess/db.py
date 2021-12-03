@@ -33,7 +33,6 @@ def parse_configuration_file(config_path: str) -> Dict[str, str]:
     for s in parser:
         for c in parser[s]:
             config[c] = parser[s][c]
-    print(repr(config))
     return config
 
 
@@ -69,7 +68,6 @@ def get_service_keys(channelname: str) -> str:
         res = curs.fetchone()
         if res:
             return res[0]
-        print(res)
     raise exceptions.InvalidKeyRequest("Something went wrong when requesting service keys.")
 
 
