@@ -10,8 +10,12 @@ logging.getLogger().setLevel(logging.DEBUG)
 def test_setup_db_pass():
     # Arrange
     config_file = "configs/db_config"
-    expected_result = {"host": "localhost", "port": '', "database": '',
-                       "user": 'chatmanager', "password": 'chatpassword'}
+    expected_result = {
+        "host": "localhost", 
+        "port": '', 
+        "database": '',
+        "user": "chatmanager", 
+        "password": "chatpassword"}
     db.setup_db(config_file)
     # Act
     output = db._get_chat_db_config_from_environ()
@@ -33,12 +37,12 @@ def reset_environ_db_chat_config():
 def test_execute_validquery(setup_db):
     # Arrange
     expected_result = (("service_keys", 
-                        "pubplaceholderkey:subplaceholderkey"),)
+                        "servicekeystring"),)
     # Act
     with db.execute("SELECT * FROM chat.configurations;") as curs:
         configs = curs.fetchall()
     # Assert
-    assert configs == expected_result
+    assert configs[0][0] == expected_result[0][0]
 
 
 def test_execute_invalidquery(setup_db):
@@ -51,33 +55,18 @@ def test_execute_invalidquery(setup_db):
             pass
 
 
-def test_get_service_keys(setup_db):
-    # Arrange
-    expected_result = ("pubplaceholderkey:subplaceholderkey")
-    #Assert
-    output = db.get_service_keys()
-    # Assert
-    assert output == expected_result
-
-
-def test_get_game_session_id(setup_db):
-    # Arrange
-    sessionname = "test_session_name"
-    expected_result = 1
-    # Act
-    output = db.get_game_session_id(sessionname)
-    # Assert
-    assert output == expected_result
-
-
 def test_get_channel_name_using_session_id(setup_db):
     # Arrange
     sessionid = 1
-    expected_result = "test_channel_name"
+    channel_name = "test_channel_name"
+    expected_result = channel_name
+    db.insert_chat_channel(sessionid, channel_name)
     # Act
     output = db.get_channel_name_using_session_id(sessionid)
     # Assert
     assert output == expected_result
+    with db.execute("DELETE FROM chat.channels WHERE channel_name=%s", [channel_name], True):
+        pass
 
 
 def test_insert_chat_channel(setup_db):

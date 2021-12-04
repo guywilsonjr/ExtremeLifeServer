@@ -12,15 +12,15 @@ def healthcheck() -> Dict[str, str]:
 
 
 @app.get("/getchannel")
-def get_channel(sname: str) -> str:
+def get_channel(sessionid: str) -> str:
     """Get chat channel name using session name."""
-    channel_name = chatserver.get_channel(sname)
+    channel_name = chatserver.get_channel(int(sessionid))
     return channel_name
 
 
 @app.get("/getkeys")
-def get_keys() -> Dict[str, str]:
+def get_keys(channelname: str) -> Dict[str, str]:
     """Get keys for chat service."""
     # Consider using encryption to prevent leaking keys to users.
-    keys = chatserver.get_chat_service_keys()
+    keys = chatserver.get_chat_service_keys(channelname)
     return keys

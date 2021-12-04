@@ -57,6 +57,16 @@ class DataManager:
     def get_game(self, game_id: int):
         gq = Query()
         return self.db.table(GAME_TN).get(gq.game_id == game_id)
+    
+    def get_games(self):
+        return self.db.table(GAME_TN).all()
+    
+    def validate_game_id(self, game_id: int):
+        return bool(self.get_game(game_id))
+    
+    def remove_game(self, game_id: int) -> List[str]:
+        gq = Query()
+        return self.db.table(GAME_TN).remove(gq.game_id == game_id)
 
     def get_match_request(self, request_id: int):
         return list(filter(lambda req: req['request_id'] == request_id, self.db.table(MATCH_REQUEST_TN).all()))
