@@ -37,9 +37,9 @@ class AttackCell(Cell):
     def simulate_step(self, grid: CellGrid) -> CellEffect:
         target = self.get_target()
         if target:
-            return CellEffect(CellEffectType.ATTACK, target.x_loc, target.y_loc)
+            return CellEffect(CellEffectType.ATTACK_EFFECT, target.x_loc, target.y_loc)
         else:
-            return CellEffect(CellEffectType.DEFEND, self.data.x_loc, self.data.y_loc)
+            return CellEffect(CellEffectType.DEFEND_EFFECT, self.data.x_loc, self.data.y_loc)
 
 
 class DefenseCell(Cell):
@@ -52,22 +52,21 @@ class DefenseCell(Cell):
     def simulate_step(self, grid: CellGrid) -> CellEffect:
         target = self.get_target()
         if target:
-            return CellEffect(CellEffectType.DEFEND, target.x_loc, target.y_loc)
+            return CellEffect(CellEffectType.DEFEND_EFFECT, target.x_loc, target.y_loc)
         else:
-            return CellEffect(CellEffectType.REPLICATE, self.data.x_loc, self.data.y_loc)
+            return CellEffect(CellEffectType.REPLICATE_EFFECT, self.data.x_loc, self.data.y_loc)
 
 
 class ReplicateCell(Cell):
-
     def get_target(self) -> CellData:
         return next(self.empty_neighbors, None).data if self.empty_neighbors else None
 
     def simulate_step(self, grid: CellGrid) -> CellEffect:
         target = self.get_target()
         if target:
-            return CellEffect(CellEffectType.ATTACK, target.x_loc, target.y_loc)
+            return CellEffect(CellEffectType.ATTACK_EFFECT, target.x_loc, target.y_loc)
         else:
-            return CellEffect(CellEffectType.DEFEND, self.data.x_loc, self.data.y_loc)
+            return CellEffect(CellEffectType.DEFEND_EFFECT, self.data.x_loc, self.data.y_loc)
 
 
 @dataclass
@@ -81,6 +80,6 @@ class ViralCell(Cell):
     def simulate_step(self, grid: CellGrid) -> CellEffect:
         target = self.get_target()
         if target:
-            return CellEffect(CellEffectType.INFECT, target.x_loc, target.y_loc)
+            return CellEffect(CellEffectType.INFECT_EFFECT, target.x_loc, target.y_loc)
         else:
-            return CellEffect(CellEffectType.DEFEND, self.data.x_loc, self.data.y_loc)
+            return CellEffect(CellEffectType.DEFEND_EFFECT, self.data.x_loc, self.data.y_loc)

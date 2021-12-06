@@ -4,3 +4,4 @@ pydantic
 numpy
 tinydb
 python-multipart
+icecream

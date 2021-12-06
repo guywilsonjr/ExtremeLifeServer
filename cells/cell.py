@@ -6,6 +6,13 @@ import numpy.typing as npt
 
 
 class CellEffectType(Enum):
+    REPLICATE_EFFECT = auto()
+    ATTACK_EFFECT = auto()
+    DEFEND_EFFECT = auto()
+    INFECT_EFFECT = auto()
+
+
+class CellType(Enum):
     REPLICATE = auto()
     ATTACK = auto()
     DEFEND = auto()
@@ -38,6 +45,7 @@ class CellData(ABC):
 EMPTY_CELL_DATA = None
 CellGrid = npt.NDArray[CellData]
 CellGridData = List[List[Optional[CellData]]]
+
 
 class Cell:
     def __init__(self, data: CellData):
@@ -73,6 +81,7 @@ class Cell:
     @abstractmethod
     def simulate_step(self, grid: CellGrid) -> CellEffect:
         pass
+
 
 EMPTY_CELL: Cell = None
 

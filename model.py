@@ -1,8 +1,12 @@
+from typing import Optional, List, Set, TYPE_CHECKING
 import dataclasses
-from typing import Optional, List
 from fastapi import File
-from pydantic.dataclasses import dataclass
-from cells.cell import Cell, CellGridData, EMPTY_CELL_DATA, CellGridData
+from cells.cell import Cell, EMPTY_CELL_DATA, CellGridData
+if TYPE_CHECKING:
+    from dataclasses import dataclass
+else:
+    from pydantic.dataclasses import dataclass
+
 
 GRID_LENGTH = 10
 GRID_WIDTH = 10
@@ -40,17 +44,7 @@ class MatchRequestData:
     request_id: int
     action_script_id: int
     match_is_complete: Optional[bool]
-    game_id: Optional[int]
-
-    def to_fmr(self) -> FindMatchRequest:
-        return self.match_request
-
-
-
-@dataclasses.dataclass
-class ActionScript:
-    meta: ActionScriptMeta
-    file: File
+    game_id: Optional[int] = None
 
 
 @dataclass
@@ -81,3 +75,19 @@ class GameData:
     player1_req: MatchRequestData
     player2_req: MatchRequestData
     current_state: GameState
+    awaiting_p1_placment: bool = True
+    awaiting_p2_placment: bool = True
+
+
+@dataclass
+class CellPlacement:
+    cell_type: str
+    team_number: int
+    x_loc: int
+    y_loc: int
+
+
+@dataclass
+class InitialPlacementRequest:
+    player_id: int
+    cell_placements: Set[CellPlacement]

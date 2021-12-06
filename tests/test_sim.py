@@ -3,7 +3,7 @@ from fastapi.testclient import TestClient
 
 from main import app
 from cells.cell_types import AttackCellData
-from simulator import GameState, Simulator
+from controller import GameState, Controller
 from cells.cell import EMPTY_CELL
 
 
@@ -12,13 +12,19 @@ testun1 = 'test-user-1'
 
 
 def test_cell():
-    cell = AttackCellData(x_loc=0, y_loc=0, team_number=1, grid_length=6, grid_height=5)
+    cell = AttackCellData(
+        x_loc=0,
+        y_loc=0,
+        team_number=1,
+        grid_length=6,
+        grid_height=5)
+
     print(cell)
     assert cell.attack == 1.0
 
 
 def test_sim():
-    sim = Simulator()
+    sim = Controller()
     empty_state = GameState()
     for cellrow in empty_state.cell_grid:
         for cell in cellrow:
