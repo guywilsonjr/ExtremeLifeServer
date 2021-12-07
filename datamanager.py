@@ -3,9 +3,8 @@ import time
 from dataclasses import asdict
 from typing import Union, List
 from tinydb import TinyDB, Query
-from model import FindMatchRequest, ActionScriptMeta, GameData, MatchRequestData
-from profile import Profile
-
+from fastapi import HTTPException
+from model import FindMatchRequest, ActionScriptMeta, GameData, MatchRequestData, PlayerProfile
 
 DB_LOCATION = '.db/'
 os.makedirs(DB_LOCATION) if not os.path.exists(DB_LOCATION) else None
@@ -14,7 +13,7 @@ ACTIONSCRIPT_TN = 'actionscripts'
 GAME_TN = 'games'
 MATCH_REQUEST_TN = 'matchrequests'
 
-GameDataType = Union[ActionScriptMeta, MatchRequestData, GameData, Profile]
+GameDataType = Union[ActionScriptMeta, MatchRequestData, GameData, PlayerProfile]
 
 
 class DataManager:
@@ -28,23 +27,24 @@ class DataManager:
     def update_match_requests(self, req1: MatchRequestData, req2: MatchRequestData):
         table = self.db.table(MATCH_REQUEST_TN)
         check = Query()
-        table.upsert(asdict(req1), check.player_id == req1.player_id)
-        table.upsert(asdict(req2), check.player_id == req2.player_id)
+        table.upsert(asdict(req1), check.user_id == req1.user_id)
+        table.upsert(asdict(req2), check.user_id == req2.user_id)
 
     def list_entity(self, table_name: str) -> GameDataType:
         return self.db.table(table_name).all()
 
-    def create_player_profile(self, profile: Profile):
+    def create_player_profile(self, profile: PlayerProfile):
         self.create_entity(profile, PROFILE_TN)
 
     def create_actionscript(self, actionscript: ActionScriptMeta):
         self.create_entity(actionscript, ACTIONSCRIPT_TN)
 
-    def create_match_request(self, match_request: FindMatchRequest):
+    def create_match_request(self, match_request: FindMatchRequest, player_name: str):
         match_request_data = MatchRequestData(
             action_script_id=match_request.action_script_id,
-            player_id=match_request.player_id,
-            match_is_complete=False,
+            user_id=match_request.user_id,
+            username=player_name,
+            is_match_complete=False,
             game_id=None,
             request_id=int(time.time()))
         self.create_entity(match_request_data, MATCH_REQUEST_TN)
@@ -67,9 +67,17 @@ class DataManager:
         gq = Query()
         return self.db.table(GAME_TN).remove(gq.game_id == game_id)
 
-    def get_match_request_by_player_id(self, player_id: int):
+    def get_profile_by_user_id(self, user_id: int) -> PlayerProfile:
         gq = Query()
-        return self.db.table(MATCH_REQUEST_TN).get(gq.player_id == player_id)
+        data = self.db.table(PROFILE_TN).get(gq.use_rid == user_id)
+        if data:
+            return PlayerProfile(**data)
+        else:
+            raise HTTPException(status_code=404, detail=f'Player: {user_id} Not found')
+
+    def get_match_request_by_user_id(self, user_id: int):
+        gq = Query()
+        return self.db.table(MATCH_REQUEST_TN).get(gq.user_id == user_id)
 
     def get_match_request_by_request_id(self, request_id: int):
         gq = Query()
@@ -78,16 +86,16 @@ class DataManager:
     def list_match_requests(self) -> List[MatchRequestData]:
         return [MatchRequestData(**req) for req in self.list_entity(MATCH_REQUEST_TN)]
 
-    def list_player_profiles(self) -> List[Profile]:
-        return [Profile(**prof) for prof in self.list_entity(PROFILE_TN)]
+    def list_player_profiles(self) -> List[PlayerProfile]:
+        return [PlayerProfile(**prof) for prof in self.list_entity(PROFILE_TN)]
 
     def list_action_scripts(self) -> List[ActionScriptMeta]:
         return [ActionScriptMeta(**script) for script in self.list_entity(ACTIONSCRIPT_TN)]
 
-    def delete_match_request(self, req: MatchRequestData):
-        pid = req.player_id
+    def delete_match_request(self, req: MatchRequestData) -> None:
+        pid = req.user_id
         match_req_query = Query()
-        self.db.table(MATCH_REQUEST_TN).remove(match_req_query.player_id == pid)
+        self.db.table(MATCH_REQUEST_TN).remove(match_req_query.user_id == pid)
 
     def start_new_db(self) -> TinyDB:
         return TinyDB(f'.db/data_0.json')

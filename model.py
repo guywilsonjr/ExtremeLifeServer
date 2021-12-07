@@ -1,6 +1,4 @@
 from typing import Optional, List, Set, TYPE_CHECKING
-import dataclasses
-from fastapi import File
 from cells.cell import Cell, EMPTY_CELL_DATA, CellGridData
 if TYPE_CHECKING:
     from dataclasses import dataclass
@@ -14,10 +12,9 @@ EMPTY_CELL: Cell = None
 
 
 @dataclass
-class Profile:
-    userid: int
+class PlayerProfile:
+    user_id: int
     username: str
-    games: Optional[List[int]] = None
 
 
 @dataclass
@@ -34,16 +31,17 @@ class ActionScriptMeta:
 
 @dataclass
 class FindMatchRequest:
-    player_id: int
+    user_id: int
     action_script_id: int
 
 
 @dataclass
 class MatchRequestData:
-    player_id: int
+    user_id: int
+    username: str
     request_id: int
     action_script_id: int
-    match_is_complete: Optional[bool]
+    is_match_complete: Optional[bool]
     game_id: Optional[int] = None
 
 
@@ -59,14 +57,6 @@ class GameState:
 
     def get_cell_grid(self) -> CellGridData:
         return self.cell_grid
-
-
-@dataclass
-class NewGameRequest:
-    player1_id: int
-    player2_id: int
-    player1_actionscript_name: str
-    player2_actionscript_name: str
 
 
 @dataclass
@@ -89,5 +79,5 @@ class CellPlacement:
 
 @dataclass
 class InitialPlacementRequest:
-    player_id: int
+    user_id: int
     cell_placements: Set[CellPlacement]

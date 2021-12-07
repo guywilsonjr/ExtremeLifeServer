@@ -1,12 +1,18 @@
 import copy
+import time
+
+from icecream import ic
+
 from cells.cell import CellEffectType
 import numpy as np
 
-from model import GameState, GameData
+from model import GameState, GameData, FindMatchRequest, MatchRequestData
 
+from datamanager import DataManager
 
 class Controller:
     def __init__(self):
+        self.dm = DataManager()
         self.game_states = []
         initial_state = GameState()
         self.current_turn = 0
@@ -20,7 +26,8 @@ class Controller:
             print(row)
         print()
 
-    def update_placements(self):
+    @staticmethod
+    def update_placements(placements):
         '''
 
         :return: None
@@ -33,6 +40,60 @@ class Controller:
 
     def get_special_effect_grid(self):
         return
+
+    def create_match(self, req1: FindMatchRequest, req2: FindMatchRequest) -> int:
+        new_game_id = int(time.time())
+        game_data = GameData(
+            game_id=new_game_id,
+            player1_req=req1,
+            player2_req=req2,
+            current_state=GameState())
+        self.dm.create_game(game_data)
+        return new_game_id
+
+    def process_match(self, init_req: FindMatchRequest) -> FindMatchRequest:
+        existing_player_req = self.dm.get_match_request_by_user_id(init_req.user_id)
+        if existing_player_req:
+            return existing_player_req
+        else:
+            prof = self.dm.get_profile_by_user_id(init_req.user_id)
+            existing_player_req = self.dm.create_match_request(init_req, prof.username)
+        existing_reqs = self.dm.list_match_requests()
+        other_player_reqs = list(
+            filter(
+                lambda req: req.request_id != existing_player_req.request_id and not req.is_match_complete,
+                existing_reqs))
+
+        if other_player_reqs:
+            matching_req = other_player_reqs[0] if other_player_reqs else None
+            if matching_req:
+                if existing_player_req:
+                    ic(
+                        'Found Existing player req\n',
+                        existing_player_req,
+                        '\n Matching req\n',
+                        matching_req)
+                    new_game_id = self.create_match(existing_player_req, matching_req)
+                    ic('Setting new game ids to', new_game_id)
+                    existing_player_req = MatchRequestData(
+                        user_id=existing_player_req.user_id,
+                        username=existing_player_req.username,
+                        request_id=existing_player_req.request_id,
+                        action_script_id=existing_player_req.action_script_id,
+                        is_match_complete=True,
+                        game_id=new_game_id
+                    )
+                    matching_req = MatchRequestData(
+                        user_id=matching_req.user_id,
+                        username=matching_req.username,
+                        request_id=matching_req.request_id,
+                        action_script_id=matching_req.action_script_id,
+                        is_match_complete=True,
+                        game_id=new_game_id
+                    )
+                    self.dm.update_match_requests(matching_req, existing_player_req)
+                    ic('Matches updated')
+        return existing_player_req
 
     def get_simulated_cell_transitions(self, cell_grid) -> np.ndarray:
         num_rows = len(cell_grid)

@@ -75,14 +75,14 @@ def test_get_service_keys_raiseinvalidkeyrequest(setup_db, mock_game_session):
 def ensure_session_not_found(session_id: int):
     from datamanager import DataManager
     logging.debug("Games removed: %s" % DataManager().remove_game(session_id))
-    
+
 
 @pytest.fixture
 def mock_game_session(game_id: int):
     from datamanager import DataManager
     import model
-    req1 = model.MatchRequestData(player_id=1, request_id=0, action_script_id=100, match_is_complete=None, game_id=None)
-    req2 = model.MatchRequestData(player_id=2, request_id=0, action_script_id=200, match_is_complete=None, game_id=None)
+    req1 = model.MatchRequestData(user_id=1, request_id=0, action_script_id=100, is_match_complete=None, game_id=None)
+    req2 = model.MatchRequestData(user_id=2, request_id=0, action_script_id=200, is_match_complete=None, game_id=None)
     gamestate = model.GameState()
     game = model.GameData(game_id=game_id, player1_req=req1, player2_req=req2, current_state=gamestate)
     dm = DataManager()
@@ -90,7 +90,7 @@ def mock_game_session(game_id: int):
     yield game_id
     dm.remove_game(game_id)
 
-    
+
 def ensure_session_id_does_not_have_channel(session_id: int):
     with db.execute("DELETE FROM chat.channels WHERE sid=%s", [session_id], True) as curs:
         return curs.fetchall()
@@ -99,14 +99,14 @@ def ensure_session_id_does_not_have_channel(session_id: int):
 @pytest.fixture
 def ensure_channel_name_already_exists(session_id, channel_name):
     try:
-        with db.execute("INSERT INTO chat.channels (sid, channel_name) VALUES (%s, %s);", 
+        with db.execute("INSERT INTO chat.channels (sid, channel_name) VALUES (%s, %s);",
                         [session_id, channel_name], True) as curs:
             """curs.fetchall()"""
     except pymysql.err.IntegrityError:
         print("Channel name already exists.")
-    
+
     yield
-    
+
     with db.execute("DELETE FROM chat.channels WHERE sid=%s AND channel_name=%s;",
                     [session_id, channel_name], True) as curs:
         """curs.fetchall()"""
