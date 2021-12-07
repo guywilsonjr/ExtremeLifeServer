@@ -1,6 +1,5 @@
 from typing import Dict, List
 from icecream import ic
-import time
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -8,7 +7,6 @@ from datamanager import DataManager
 from model import (
     FindMatchRequest,
     GameData,
-    ActionScriptMeta,
     PlayerProfile,
     ActionScriptMetaResp,
     MatchRequestData,
@@ -42,10 +40,8 @@ def healthcheck() -> Dict[str, str]:
 
 
 @app.post("/profile/{username}", response_model=PlayerProfile)
-def create_user(username: str) -> PlayerProfile:
-    user_id = int(time.time())
-    profile = PlayerProfile(user_id, username)
-    dm.create_player_profile(profile)
+def create_profile(username: str) -> PlayerProfile:
+    profile = simulator.create_user(username)
     return profile
 
 
@@ -55,13 +51,8 @@ def list_users() -> List[PlayerProfile]:
 
 
 @app.post("/actionscript", response_model=None)
-async def validate_script(script_name: str, file: UploadFile = File(...)) -> None:
-    acmr = ActionScriptMetaResp(script_id=int(time.time()), script_name=script_name)
-    pathname = script_name + str(int(time.time())) + '.py'
-    with open(pathname, 'wb') as acfile:
-        acfile.write(await file.read())
-    ac = ActionScriptMeta(resp=acmr, path=pathname)
-    dm.create_actionscript(ac)
+def validate_script(script_name: str, file: UploadFile = File(...)) -> None:
+    acmr = simulator.create_action_script(script_name, file)
     return acmr
 
 

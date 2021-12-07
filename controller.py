@@ -1,12 +1,20 @@
 import copy
+import sys
 import time
-
+from random import Random
+from fastapi import UploadFile, File
 from icecream import ic
 
 from cells.cell import CellEffectType
 import numpy as np
-
-from model import GameState, GameData, FindMatchRequest, MatchRequestData
+from model import (
+    GameState,
+    GameData,
+    FindMatchRequest,
+    MatchRequestData,
+    PlayerProfile,
+    ActionScriptMetaResp,
+    ActionScriptMeta)
 
 from datamanager import DataManager
 
@@ -18,6 +26,7 @@ class Controller:
         self.current_turn = 0
         self.latest_state = initial_state
         self.game_states.append(initial_state)
+        self.random = Random(time.time_ns())
 
 
     def print_state(self, state: GameState):
@@ -41,8 +50,26 @@ class Controller:
     def get_special_effect_grid(self):
         return
 
+    def get_random_id(self):
+        return self.random.randint(0, sys.maxsize)
+
+    def create_user(self, username: str):
+        user_id = self.get_random_id()
+        profile = PlayerProfile(user_id, username)
+        self.dm.create_player_profile(profile)
+        return profile
+
+    def create_action_script(self, script_name: str, file: UploadFile = File(...)):
+        acmr = ActionScriptMetaResp(script_id=self.get_random_id(), script_name=script_name)
+        pathname = script_name + str(self.get_random_id()) + '.py'
+        with open(pathname, 'wb') as acfile:
+            acfile.write(file.read())
+        ac = ActionScriptMeta(resp=acmr, path=pathname)
+        self.dm.create_actionscript(ac)
+        return acmr
+
     def create_match(self, req1: FindMatchRequest, req2: FindMatchRequest) -> int:
-        new_game_id = int(time.time())
+        new_game_id = self.get_random_id()
         game_data = GameData(
             game_id=new_game_id,
             player1_req=req1,
@@ -57,7 +84,14 @@ class Controller:
             return existing_player_req
         else:
             prof = self.dm.get_profile_by_user_id(init_req.user_id)
-            existing_player_req = self.dm.create_match_request(init_req, prof.username)
+            match_request_data = MatchRequestData(
+                action_script_id=init_req.action_script_id,
+                user_id=init_req.user_id,
+                username=prof.username,
+                is_match_complete=False,
+                game_id=None,
+                request_id=self.get_random_id())
+            existing_player_req = self.dm.create_match_request(match_request_data)
         existing_reqs = self.dm.list_match_requests()
         other_player_reqs = list(
             filter(

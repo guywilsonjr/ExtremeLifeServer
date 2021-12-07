@@ -39,14 +39,7 @@ class DataManager:
     def create_actionscript(self, actionscript: ActionScriptMeta):
         self.create_entity(actionscript, ACTIONSCRIPT_TN)
 
-    def create_match_request(self, match_request: FindMatchRequest, player_name: str):
-        match_request_data = MatchRequestData(
-            action_script_id=match_request.action_script_id,
-            user_id=match_request.user_id,
-            username=player_name,
-            is_match_complete=False,
-            game_id=None,
-            request_id=int(time.time()))
+    def create_match_request(self, match_request_data: MatchRequestData) -> MatchRequestData:
         self.create_entity(match_request_data, MATCH_REQUEST_TN)
         return match_request_data
 
