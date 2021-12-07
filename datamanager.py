@@ -69,7 +69,7 @@ class DataManager:
 
     def get_profile_by_user_id(self, user_id: int) -> PlayerProfile:
         gq = Query()
-        data = self.db.table(PROFILE_TN).get(gq.use_rid == user_id)
+        data = self.db.table(PROFILE_TN).get(gq.user_id == user_id)
         if data:
             return PlayerProfile(**data)
         else:
