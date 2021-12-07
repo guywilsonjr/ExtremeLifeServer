@@ -64,6 +64,7 @@ class DataManager:
         gq = Query()
         data = self.db.table(PROFILE_TN).get(gq.user_id == user_id)
         if data:
+
             return PlayerProfile(**data)
         else:
             raise HTTPException(status_code=404, detail=f'Player: {user_id} Not found')

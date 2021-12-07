@@ -41,8 +41,7 @@ def healthcheck() -> Dict[str, str]:
 
 @app.post("/profile/{username}", response_model=PlayerProfile)
 def create_profile(username: str) -> PlayerProfile:
-    profile = simulator.create_user(username)
-    return profile
+    return simulator.create_user(username)
 
 
 @app.get("/profile", response_model=List[PlayerProfile])

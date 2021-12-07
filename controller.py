@@ -51,11 +51,12 @@ class Controller:
         return
 
     def get_random_id(self):
-        return self.random.randint(0, sys.maxsize)
+        return self.random.randint(0, 2 ** 16)
 
     def create_user(self, username: str):
         user_id = self.get_random_id()
         profile = PlayerProfile(user_id, username)
+
         self.dm.create_player_profile(profile)
         return profile
 
