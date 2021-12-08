@@ -9,7 +9,7 @@ import pymysql
 logging.getLogger().setLevel(logging.DEBUG)
 
 MOCKED_GAME_ID = 9999999
-MOCKED_CHANNEL_NAME = "TEST_CHANNEL_NAME"
+MOCKED_CHANNEL_NAME = "mocked_channel_name"
 
 
 @pytest.mark.parametrize('game_id', [MOCKED_GAME_ID])
@@ -26,6 +26,8 @@ def test_get_channel_found(setup_db, mock_game_session):
     output_value = chatserver.get_channel(session_id)
     # Assert
     assert output_value == expected_value
+    # Clean up
+    delete_channel_name(MOCKED_GAME_ID)
 
 
 def test_get_channel_raises_sessionnamenotfound(setup_db):
@@ -36,7 +38,7 @@ def test_get_channel_raises_sessionnamenotfound(setup_db):
     with pytest.raises(exceptions.SessionNameNotFound):
         # Act
         output_value = chatserver.get_channel(session_id)
-    delete_channel_name(session_id + 1)
+    delete_channel_name(session_id)
 
 
 @pytest.mark.parametrize('game_id', [42])
@@ -75,7 +77,6 @@ def test_get_service_keys_raiseinvalidkeyrequest(setup_db, mock_game_session):
 def ensure_session_not_found(session_id: int):
     from datamanager import DataManager
     logging.debug("Games removed: %s" % DataManager().remove_game(session_id))
-
 
 @pytest.fixture
 def mock_game_session(game_id: int):

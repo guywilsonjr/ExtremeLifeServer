@@ -80,7 +80,6 @@ def get_channel_name_using_session_id(sessionid: str) -> str:
             return channel_name[0]
     except TypeError as err:
         logging.debug(err)
-        raise exceptions.ChannelNameError("Session ID not found: %s" % sessionid)
 
 
 def insert_chat_channel(sessionid: str, channelname: str, commit: bool=True) -> str:
