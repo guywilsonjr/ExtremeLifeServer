@@ -2,8 +2,8 @@ import datamanager as testmodule
 import logging
 import model
 
-req1 = model.MatchRequestData(user_id=1, request_id=0, action_script_id=100, is_match_complete=None, game_id=None)
-req2 = model.MatchRequestData(user_id=2, request_id=0, action_script_id=200, is_match_complete=None, game_id=None)
+req1 = model.MatchRequestData(user_id=1, username='testusername1', request_id=0, action_script_id=100, is_match_complete=None, game_id=None)
+req2 = model.MatchRequestData(user_id=2, username='testusername2', request_id=0, action_script_id=200, is_match_complete=None, game_id=None)
 gamestate = model.GameState()
 
 logging.getLogger().setLevel(logging.DEBUG)
@@ -13,8 +13,11 @@ def test_get_game():
     game_id = 0
     expected_value = {
         'game_id': game_id,
+        'awaiting_p1_placment': True,
+        'awaiting_p2_placment': True,
         'player1_req': {
             'user_id': 1,
+            'username': 'testusername1',
             'request_id': 0,
             'action_script_id': 100,
             'is_match_complete': None,
@@ -22,6 +25,7 @@ def test_get_game():
         },
         'player2_req': {
             'user_id': 2,
+            'username': 'testusername2',
             'request_id': 0,
             'action_script_id': 200,
             'is_match_complete': None,
