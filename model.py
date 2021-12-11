@@ -80,4 +80,4 @@ class CellPlacement:
 @dataclass
 class InitialPlacementRequest:
     user_id: int
-    cell_placements: Set[CellPlacement]
+    cell_placements: List[CellPlacement]

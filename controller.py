@@ -1,5 +1,4 @@
 import copy
-import sys
 import time
 from random import Random
 from fastapi import UploadFile, File
@@ -27,7 +26,6 @@ class Controller:
         self.latest_state = initial_state
         self.game_states.append(initial_state)
         self.random = Random(time.time_ns())
-
 
     def print_state(self, state: GameState):
         print()
