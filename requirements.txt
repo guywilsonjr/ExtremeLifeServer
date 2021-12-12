@@ -5,3 +5,4 @@ numpy
 tinydb
 python-multipart
 icecream
+pymysql
