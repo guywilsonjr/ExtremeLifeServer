@@ -66,7 +66,7 @@ def simulate_state(game_id: int) -> GameData:
 
 
 @app.put("/game/{game_id}", response_model=GameData)
-def simulate_step(game_id: int) -> GameData:
+def NOT_DONE_simulate_next_step(game_id: int) -> GameData:
     game = simulator.simulate_step(dm.get_game(game_id))
     return game
 

@@ -56,7 +56,7 @@ class CellPlacement:
 @dataclass
 class GameState:
     current_turn: int
-    cell_placements: List[List[CellPlacement]]
+    cell_placements: List[CellPlacement]
 
 
 @dataclass
