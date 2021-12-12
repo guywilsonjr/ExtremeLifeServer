@@ -1,5 +1,4 @@
 import os
-import time
 from dataclasses import asdict
 from typing import Union, List
 from tinydb import TinyDB, Query
@@ -51,7 +50,7 @@ class DataManager:
         return GameData(**self.db.table(GAME_TN).get(gq.game_id == game_id))
 
     def get_games(self) -> List[GameData]:
-        return [GameData(**game) for game in self.db.table(GAME_TN).all()]
+        return [GameData(**game) for game in self.db.table(GAME_TN).all() if game else None]
 
     def validate_game_id(self, game_id: int):
         return bool(self.get_game(game_id))
@@ -59,10 +58,6 @@ class DataManager:
     def remove_game(self, game_id: int) -> List[str]:
         gq = Query()
         return self.db.table(GAME_TN).remove(gq.game_id == game_id)
-
-    def get_games(self):
-        return self.db.table(GAME_TN).all()
-
 
     def get_profile_by_user_id(self, user_id: int) -> PlayerProfile:
         gq = Query()

@@ -19,11 +19,6 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost.tiangolo.com",
-        "https://localhost.tiangolo.com",
-        "http://localhost",
-        "http://localhost:8080",
-        "http://localhost:8000",
         "*"
     ],
     allow_credentials=True,
