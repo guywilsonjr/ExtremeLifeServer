@@ -65,18 +65,19 @@ class DataManager:
         gq = Query()
         data = self.db.table(PROFILE_TN).get(gq.user_id == user_id)
         if data:
-
             return PlayerProfile(**data)
         else:
             raise HTTPException(status_code=404, detail=f'Player: {user_id} Not found')
 
     def get_match_request_by_user_id(self, user_id: int):
         gq = Query()
-        return self.db.table(MATCH_REQUEST_TN).get(gq.user_id == user_id)
+        match_request = self.db.table(MATCH_REQUEST_TN).get(gq.user_id == user_id)
+        return MatchRequestData(**match_request) if match_request else None
 
     def get_match_request_by_request_id(self, request_id: int):
         gq = Query()
-        return self.db.table(MATCH_REQUEST_TN).get(gq.request_id == request_id)
+        match_request = self.db.table(MATCH_REQUEST_TN).get(gq.request_id == request_id)
+        return MatchRequestData(**match_request) if match_request else None
 
     def list_match_requests(self) -> List[MatchRequestData]:
         return [MatchRequestData(**req) for req in self.list_entity(MATCH_REQUEST_TN)]
