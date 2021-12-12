@@ -50,7 +50,7 @@ class DataManager:
         return GameData(**self.db.table(GAME_TN).get(gq.game_id == game_id))
 
     def get_games(self) -> List[GameData]:
-        return [GameData(**game) for game in self.db.table(GAME_TN).all() if game else None]
+        return [GameData(**game) for game in self.db.table(GAME_TN).all()]
 
     def validate_game_id(self, game_id: int):
         return bool(self.get_game(game_id))
