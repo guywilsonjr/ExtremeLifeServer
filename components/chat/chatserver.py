@@ -1,4 +1,3 @@
-import os
 import logging
 from uuid import uuid4
 from typing import Dict
@@ -15,7 +14,7 @@ def get_channel(sid: int) -> str:
     """Query DB with sessionid to get channel name, if none create."""
     # we can probably cut out session name and just recieve session id/name for simplicity.
     # sid = db.get_game_session_id(session_name)
-    
+
     # validate session/game ID.
     if DataManager().validate_game_id(sid) == False:
         raise exceptions.SessionNameNotFound("Session ID not found: %s (1)." % sid)
@@ -24,7 +23,7 @@ def get_channel(sid: int) -> str:
     channel_name = db.get_channel_name_using_session_id(sid)
     if channel_name:
         return channel_name
-    
+
     # attempt to create unique channel_name upto NUM_OF_ATTEMPTS times.
     for _ in range(NUM_OF_ATTEMPTS):
         channel_name = uuid4().hex
@@ -33,8 +32,8 @@ def get_channel(sid: int) -> str:
             return db.insert_chat_channel(sid, channel_name)
         # assuming primary key issue
         except exceptions.DatabaseError as err:
-            logging.debug("Error while inserting channel name into channels table: %s" % err)        
-    
+            logging.debug("Error while inserting channel name into channels table: %s" % err)
+
     # could not generate a unique channel name...
     raise exceptions.ChannelNameError("Unique channel name not generated for session ID %s (2)." % sid)
 

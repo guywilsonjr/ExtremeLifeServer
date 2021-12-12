@@ -46,22 +46,12 @@ class DataManager:
     def create_game(self, game: GameData):
         self.create_entity(game, GAME_TN)
 
-    def get_game(self, game_id: int):
+    def get_game(self, game_id: int) -> GameData:
         gq = Query()
-        return self.db.table(GAME_TN).get(gq.game_id == game_id)
-    
-    def get_games(self):
-        return self.db.table(GAME_TN).all()
-    
-    def validate_game_id(self, game_id: int):
-        return bool(self.get_game(game_id))
-    
-    def remove_game(self, game_id: int) -> List[str]:
-        gq = Query()
-        return self.db.table(GAME_TN).remove(gq.game_id == game_id)
+        return GameData(**self.db.table(GAME_TN).get(gq.game_id == game_id))
 
-    def get_games(self):
-        return self.db.table(GAME_TN).all()
+    def get_games(self) -> List[GameData]:
+        return [GameData(**game) for game in self.db.table(GAME_TN).all()]
 
     def validate_game_id(self, game_id: int):
         return bool(self.get_game(game_id))
@@ -69,6 +59,10 @@ class DataManager:
     def remove_game(self, game_id: int) -> List[str]:
         gq = Query()
         return self.db.table(GAME_TN).remove(gq.game_id == game_id)
+
+    def get_games(self):
+        return self.db.table(GAME_TN).all()
+
 
     def get_profile_by_user_id(self, user_id: int) -> PlayerProfile:
         gq = Query()

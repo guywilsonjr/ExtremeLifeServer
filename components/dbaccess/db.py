@@ -1,4 +1,3 @@
-# import psycopg2
 import pymysql
 import contextlib
 import configparser
@@ -20,7 +19,7 @@ def setup_db(config_path: str):
         environ["CHAT_PORT"] = config.get("port")
         environ["CHAT_USER"] = config.get("user")
         environ["CHAT_PASSWORD"] = config.get("password")
-    
+
     if environ["CHAT_HOST"] == "Not Set":
         raise Exception("Host for chat database is not set.")
 
@@ -85,7 +84,7 @@ def get_channel_name_using_session_id(sessionid: str) -> str:
 def insert_chat_channel(sessionid: str, channelname: str, commit: bool=True) -> str:
     """Insert chat channel to chat channels table when new channel is created."""
     try:
-        with execute("INSERT INTO chat.channels (sid, channel_name) VALUES (%s, %s);", 
+        with execute("INSERT INTO chat.channels (sid, channel_name) VALUES (%s, %s);",
                      [sessionid, channelname], commit):
             return channelname
     except Exception as ex:

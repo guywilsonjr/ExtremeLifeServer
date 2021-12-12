@@ -21,20 +21,13 @@ from datamanager import DataManager
 class Controller:
     def __init__(self):
         self.dm = DataManager()
-        self.game_states = []
-        initial_state = GameState(0, [])
-        self.current_turn = 0
-        self.latest_state = initial_state
-        self.game_states.append(initial_state)
         self.random = Random(time.time_ns())
 
     def print_state(self, state: GameState):
         return
 
     def update_placements(self, game_id: int, placements: InitialPlacementRequest):
-        '''
-
-        '''
+        game_data = self.dm.get_game(game_id)
         return
 
     @staticmethod

@@ -2,6 +2,7 @@ import pytest
 from pytest_mock import MockerFixture
 from components.dbaccess import db
 
+
 @pytest.fixture
 def mock_uuid(mocker: MockerFixture) -> str:
     _mock_uuid = "mocked_channel_name"

@@ -55,7 +55,8 @@ def test_get_game():
     # Assert
     assert expected_value == output_value
     # Clean up
-    print(f"removed game ids: {dm.remove_game(game_id)}")
+    print(f"removed database ids: {dm.remove_game(game_id)}")
+
 
 def test_validate_game_id_validated():
     # Arrange
@@ -69,20 +70,22 @@ def test_validate_game_id_validated():
     # Assert
     assert output_value == expected_value
     # Clean up
-    print(f"removed game ids: {dm.remove_game(game_id)}")
+    print(f"removed database ids: {dm.remove_game(game_id)}")
+
 
 def test_validate_game_id_invalidated():
     # Arrange
     game_id = 0
     expected_value = False
     dm = testmodule.DataManager()
-    print(f"removed game ids: {dm.remove_game(game_id)}")
+    print(f"removed database ids: {dm.remove_game(game_id)}")
     # Act
     output_value = dm.validate_game_id(game_id)
     print(f"output_value: {output_value}")
     # Assert
     assert output_value == expected_value
     # Clean up
+
 
 def test_get_games():
     dm = testmodule.DataManager()
