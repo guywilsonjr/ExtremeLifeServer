@@ -72,8 +72,8 @@ def simulate_step(game_id: int) -> GameData:
 
 
 @app.patch("/game/{game_id}")
-def set_initial_cells(placements: InitialPlacementRequest) -> None:
-    simulator.update_placements(placements)
+def set_initial_cells(game_id: int, placements: InitialPlacementRequest) -> None:
+    simulator.update_placements(game_id, placements)
 
 
 @app.post("/match", response_model=MatchRequestData)

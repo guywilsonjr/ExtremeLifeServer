@@ -13,9 +13,10 @@ from model import (
     MatchRequestData,
     PlayerProfile,
     ActionScriptMetaResp,
-    ActionScriptMeta)
+    ActionScriptMeta, InitialPlacementRequest)
 
 from datamanager import DataManager
+
 
 class Controller:
     def __init__(self):
@@ -28,16 +29,11 @@ class Controller:
         self.random = Random(time.time_ns())
 
     def print_state(self, state: GameState):
-        print()
-        for row in state.cell_grid:
-            print(row)
-        print()
+        return
 
-    @staticmethod
-    def update_placements(placements):
+    def update_placements(self, game_id: int, placements: InitialPlacementRequest):
         '''
 
-        :return: None
         '''
         return
 

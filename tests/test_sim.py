@@ -4,7 +4,6 @@ from fastapi.testclient import TestClient
 from main import app
 from cells.cell_types import AttackCellData
 from controller import GameState, Controller
-from cells.cell import EMPTY_CELL
 
 
 
@@ -25,10 +24,7 @@ def test_cell():
 
 def test_sim():
     sim = Controller()
-    empty_state = GameState()
-    for cellrow in empty_state.cell_grid:
-        for cell in cellrow:
-            assert cell == EMPTY_CELL
+    empty_state = GameState(0, [[]])
     sim.print_state(empty_state)
 
 

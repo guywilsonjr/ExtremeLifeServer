@@ -1,5 +1,5 @@
-from typing import Optional, List, Set, TYPE_CHECKING
-from cells.cell import Cell, EMPTY_CELL_DATA, CellGridData
+from typing import Optional, List, TYPE_CHECKING
+from cells.cell import Cell
 if TYPE_CHECKING:
     from dataclasses import dataclass
 else:
@@ -46,17 +46,17 @@ class MatchRequestData:
 
 
 @dataclass
+class CellPlacement:
+    cell_type: str
+    team_number: int
+    x_loc: int
+    y_loc: int
+
+
+@dataclass
 class GameState:
     current_turn: int
-    cell_grid: CellGridData
-
-    def __init__(self):
-        # Initialize a GRID_LENGTH x GRID_LENGTH grid of empty cells
-        self.cell_grid = [[EMPTY_CELL_DATA] * GRID_LENGTH] * GRID_WIDTH
-        self.current_turn = 0
-
-    def get_cell_grid(self) -> CellGridData:
-        return self.cell_grid
+    cell_placements: List[List[CellPlacement]]
 
 
 @dataclass
@@ -67,14 +67,6 @@ class GameData:
     current_state: GameState
     awaiting_p1_placment: bool = True
     awaiting_p2_placment: bool = True
-
-
-@dataclass
-class CellPlacement:
-    cell_type: str
-    team_number: int
-    x_loc: int
-    y_loc: int
 
 
 @dataclass
