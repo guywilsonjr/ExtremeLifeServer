@@ -69,7 +69,38 @@ def NOT_DONE_simulate_next_step(game_id: int) -> GameData:
 @app.patch("/game/{game_id}")
 def set_initial_cells(game_id: int, placements: InitialPlacementRequest) -> Dict[str, str]:
     simulator.update_placements(game_id, placements)
-    return {'Message': 'OK'}
+    return {
+    "game_data": {
+        "grid_length": 2,
+        "grid_height": 2,
+        "player_cells": [
+            {
+                "x_loc": 2,
+                "y_loc": 2,
+                "team_number": -1, # red
+                "life": 1
+            },
+            {
+                "x_loc": 0,
+                "y_loc": 0,
+                "team_number": 1, # green
+                "life": 1
+            },
+            {
+                "x_loc": 1,
+                "y_loc": 1,
+                "team_number": -1, # red
+                "life": 1
+            },
+            {
+                "x_loc": 0,
+                "y_loc": 1,
+                "team_number": 1, # green
+                "life": 1
+            }
+        ]
+    }
+}
 
 
 @app.post("/match", response_model=MatchRequestData)
@@ -81,9 +112,4 @@ def request_match(request: FindMatchRequest) -> MatchRequestData:
 @app.get("/match/{request_id}", response_model=MatchRequestData)
 def request_match(request_id: int) -> List[MatchRequestData]:
     return dm.get_match_request_by_request_id(request_id)
-
-
-
-
-
 
