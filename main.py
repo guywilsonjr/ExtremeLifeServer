@@ -67,8 +67,9 @@ def NOT_DONE_simulate_next_step(game_id: int) -> GameData:
 
 
 @app.patch("/game/{game_id}")
-def set_initial_cells(game_id: int, placements: InitialPlacementRequest) -> None:
+def set_initial_cells(game_id: int, placements: InitialPlacementRequest) -> Dict[str, str]:
     simulator.update_placements(game_id, placements)
+    return {'Message': 'OK'}
 
 
 @app.post("/match", response_model=MatchRequestData)
