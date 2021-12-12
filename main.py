@@ -55,20 +55,8 @@ def list_predefined_actions() -> List[ActionScriptMetaResp]:
     return [ActionScriptMetaResp(ac.resp.script_id, ac.resp.script_name) for ac in dm.list_action_scripts()]
 
 
-@app.get("/game/{game_id}", response_model=GameData)
+@app.get("/game/{game_id}")
 def simulate_state(game_id: int) -> GameData:
-    return dm.get_game(game_id)
-
-
-@app.put("/game/{game_id}", response_model=GameData)
-def NOT_DONE_simulate_next_step(game_id: int) -> GameData:
-    game = simulator.simulate_step(dm.get_game(game_id))
-    return game
-
-
-@app.patch("/game/{game_id}")
-def set_initial_cells(game_id: int, placements: InitialPlacementRequest) -> Dict[str, str]:
-    simulator.update_placements(game_id, placements)
     return {
     "game_data": {
         "grid_length": 2,
@@ -101,6 +89,18 @@ def set_initial_cells(game_id: int, placements: InitialPlacementRequest) -> Dict
         ]
     }
 }
+
+
+@app.put("/game/{game_id}", response_model=GameData)
+def NOT_DONE_simulate_next_step(game_id: int) -> GameData:
+    game = simulator.simulate_step(dm.get_game(game_id))
+    return game
+
+
+@app.patch("/game/{game_id}")
+def set_initial_cells(game_id: int, placements: InitialPlacementRequest) -> Dict[str, str]:
+    simulator.update_placements(game_id, placements)
+    return {'Message': 'OK'}
 
 
 @app.post("/match", response_model=MatchRequestData)
