@@ -47,7 +47,8 @@ class DataManager:
 
     def get_game(self, game_id: int) -> GameData:
         gq = Query()
-        return GameData(**self.db.table(GAME_TN).get(gq.game_id == game_id))
+        game_data = self.db.table(GAME_TN).get(gq.game_id == game_id)
+        return GameData(**game_data) if game_data else None
 
     def get_games(self) -> List[GameData]:
         return [GameData(**game) for game in self.db.table(GAME_TN).all()]
@@ -57,7 +58,8 @@ class DataManager:
 
     def remove_game(self, game_id: int) -> List[str]:
         gq = Query()
-        return self.db.table(GAME_TN).remove(gq.game_id == game_id)
+        removed_entry_id = self.db.table(GAME_TN).remove(gq.game_id == game_id)
+        return removed_entry_id if removed_entry_id else None
 
     def get_profile_by_user_id(self, user_id: int) -> PlayerProfile:
         gq = Query()
