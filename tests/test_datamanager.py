@@ -11,7 +11,7 @@ logging.getLogger().setLevel(logging.DEBUG)
 def test_get_game():
     # Arrange
     game_id = 0
-    expected_value = {
+    expected_value = model.GameData(**{
         'game_id': game_id,
         'awaiting_p1_placment': True,
         'awaiting_p2_placment': True,
@@ -35,7 +35,7 @@ def test_get_game():
             'current_turn': 0,
             'cell_placements': []
         }
-    }
+    })
     dm = testmodule.DataManager()
     thegame = model.GameData(game_id=game_id, player1_req=req1, player2_req=req2, current_state=gamestate)
     dm.create_game(thegame)
