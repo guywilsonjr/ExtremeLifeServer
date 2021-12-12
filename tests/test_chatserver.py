@@ -84,7 +84,7 @@ def mock_game_session(game_id: int):
     import model
     req1 = model.MatchRequestData(user_id=1, username='testusername1', request_id=0, action_script_id=100, is_match_complete=None, game_id=None)
     req2 = model.MatchRequestData(user_id=2, username='testusername2', request_id=0, action_script_id=200, is_match_complete=None, game_id=None)
-    gamestate = model.GameState()
+    gamestate = model.GameState(0, [])
     game = model.GameData(game_id=game_id, player1_req=req1, player2_req=req2, current_state=gamestate)
     dm = DataManager()
     dm.create_game(game)

@@ -24,7 +24,7 @@ def test_cell():
 
 def test_sim():
     sim = Controller()
-    empty_state = GameState(0, [[]])
+    empty_state = GameState(0, [])
     sim.print_state(empty_state)
 
 

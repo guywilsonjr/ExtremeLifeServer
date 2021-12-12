@@ -4,7 +4,7 @@ import model
 
 req1 = model.MatchRequestData(user_id=1, username='testusername1', request_id=0, action_script_id=100, is_match_complete=None, game_id=None)
 req2 = model.MatchRequestData(user_id=2, username='testusername2', request_id=0, action_script_id=200, is_match_complete=None, game_id=None)
-gamestate = model.GameState()
+gamestate = model.GameState(0,[])
 
 logging.getLogger().setLevel(logging.DEBUG)
 
@@ -33,17 +33,7 @@ def test_get_game():
         },
         'current_state': {
             'current_turn': 0,
-            'cell_grid': [
-                [None, None, None, None, None, None, None, None, None, None],
-                [None, None, None, None, None, None, None, None, None, None],
-                [None, None, None, None, None, None, None, None, None, None],
-                [None, None, None, None, None, None, None, None, None, None],
-                [None, None, None, None, None, None, None, None, None, None],
-                [None, None, None, None, None, None, None, None, None, None],
-                [None, None, None, None, None, None, None, None, None, None],
-                [None, None, None, None, None, None, None, None, None, None],
-                [None, None, None, None, None, None, None, None, None, None],
-                [None, None, None, None, None, None, None, None, None, None]]
+            'cell_placements': []
         }
     }
     dm = testmodule.DataManager()
