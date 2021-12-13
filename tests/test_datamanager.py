@@ -33,7 +33,7 @@ def test_get_game():
         },
         'current_state': {
             'current_turn': 0,
-            'cell_placements': []
+            'player_occupied_cells': []
         }
     })
     dm = testmodule.DataManager()

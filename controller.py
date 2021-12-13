@@ -1,11 +1,15 @@
-import copy
 import time
 from random import Random
+from typing import List, Set, Optional
+
 from fastapi import UploadFile, File
 from icecream import ic
 from fastapi import HTTPException
-from cells.cell import CellEffectType
+
 import numpy as np
+
+from cells import cell_types
+from cells.cell_types import CellActionType, CellAction, CELL_MAPPINGS
 from model import (
     GameState,
     GameData,
@@ -13,7 +17,7 @@ from model import (
     MatchRequestData,
     PlayerProfile,
     ActionScriptMetaResp,
-    ActionScriptMeta, InitialPlacementRequest)
+    ActionScriptMeta, InitialPlacementRequest, CellInfo)
 
 from datamanager import DataManager
 
@@ -22,6 +26,9 @@ class Controller:
     def __init__(self):
         self.dm = DataManager()
         self.random = Random(time.time_ns())
+        self.defense_action_vec = np.vectorize(self.get_cell_defend_action)
+        self.attack_action_vec = np.vectorize(self.get_cell_attack_action)
+        self.life_vec = np.vectorize(self.get_cell_life)
 
     def print_state(self, state: GameState):
         return
@@ -48,7 +55,7 @@ class Controller:
         return profile
 
     def create_action_script(self, script_name: str, file: UploadFile = File(...)):
-        acmr = ActionScriptMetaResp(script_id=self.get_random_id(), script_name=script_name)
+        acmr = ActionScriptMetaResp(action_script_id=self.get_random_id(), script_name=script_name)
         pathname = script_name + str(self.get_random_id()) + '.py'
         with open(pathname, 'wb') as acfile:
             acfile.write(file.read())
@@ -142,24 +149,87 @@ class Controller:
             for j in range(num_cols):
                 cell = row[j]
                 cell_effect = cell.simulate_next_state(cell_grid)
-                if cell_effect.effect_type == CellEffectType.ATTACK_EFFECT:
+                if cell_effect.effect_type == CellActionType.ATTACK_ACTION:
                     attack_matrix[cell_effect.effect_x_loc, cell_effect.effect_y_loc] = cell_effect
-                elif cell_effect.effect_type == CellEffectType.DEFEND_EFFECT:
+                elif cell_effect.effect_type == CellActionType.DEFEND_ACTION:
                     defense_matrix[cell_effect.effect_x_loc, cell_effect.effect_y_loc] = cell_effect
-                elif cell_effect.effect_type == CellEffectType.REPLICATE_EFFECT:
+                elif cell_effect.effect_type == CellActionType.REPLICATE_ACTION:
                     replication_matrix[cell_effect.effect_x_loc, cell_effect.effect_y_loc] = cell_effect
-                elif cell_effect.effect_type == CellEffectType.INFECT_EFFECT:
+                elif cell_effect.effect_type == CellActionType.INFECT_ACTION:
                     infection_matrix[cell_effect.effect_x_loc, cell_effect.effect_y_loc] = cell_effect
 
         return attack_matrix
 
+    @classmethod
+    def is_neighbor(cls, cell_info_1: CellInfo, cell_info_2: CellInfo) -> bool:
+        if cell_info_1.x_loc == cell_info_2.x_loc and cell_info_1.y_loc == cell_info_2.y_loc:
+            return False
+        else:
+            return (cell_info_2.x_loc - cell_info_1.x_loc) <= 1 and (cell_info_2.y_loc - cell_info_1.y_loc) <= 1
+
+    @classmethod
+    def get_cell_neighbors(cls, cell_info: CellInfo, player_occupied_cells: List[CellInfo]) -> Set[CellInfo]:
+        return {potential_neighbor for potential_neighbor in player_occupied_cells if cls.is_neighbor(cell_info, potential_neighbor)}
+
+    @staticmethod
+    def get_cell_attack(cell_info: Optional[CellInfo]) -> float:
+        if not cell_info:
+            return 0
+        cell_type = cell_types.CELL_MAPPINGS[cell_info.cell_type]
+        return cell_type.get_stats().attack
+
+    @staticmethod
+    def get_cell_defend_action(cell_action: Optional[CellAction]) -> float:
+        if not cell_action:
+            return 0
+        defense = CELL_MAPPINGS[cell_action.cell_info.cell_type].get_stats().defense * 2
+        if cell_action.effect_type == CellActionType.DEFEND_ACTION:
+            return defense * 2
+        else:
+            return defense
+
+    @staticmethod
+    def get_cell_life(cell_info: Optional[CellInfo]) -> float:
+        return cell_info.life if cell_info else 0
+
+    @staticmethod
+    def get_cell_attack_action(cell_action: Optional[CellAction]) -> float:
+        if not cell_action:
+            return 0
+
+        if cell_action.effect_type == CellActionType.ATTACK_ACTION:
+            return CELL_MAPPINGS[cell_action.cell_info.cell_type].get_stats().attack
+        else:
+            return 0
+
+    @classmethod
+    def get_cell_matrices(cls, grid_length: int, player_occupied_cells: List[CellInfo]):
+        cell_info_mat = np.array([[None] * grid_length] * grid_length)
+        cell_action_mat = np.array([[None] * grid_length] * grid_length)
+
+        for cur_cell in player_occupied_cells:
+            cell_type = cell_types.CELL_MAPPINGS[cur_cell.cell_type]
+            cell_info_mat[cur_cell.x_loc][cur_cell.y_loc] = cur_cell
+            neighbors = cls.get_cell_neighbors(cur_cell, player_occupied_cells)
+            action = cell_type.get_action(neighbors)
+            cell_action_mat[action.effect_x_loc][action.effect_y_loc] = action
+
+        return cell_info_mat, cell_action_mat
+
     def simulate_next_state(self, game_id: int) -> GameData:
-        game = self.dm.get_game(game_id)
-        if not game:
-            raise
-        game: GameData = None
-        game_state = game
-        game_state_copy = copy.deepcopy(game_state)
+        game_data = self.dm.get_game(game_id)
+        if not game_data:
+            raise HTTPException(status_code=404, detail=f'Game not found: {game_id}')
+        next_turn = game_data.current_state.current_turn + 1
+        occupied_cells = game_data.current_state.player_occupied_cells
+        cell_info_mat, cell_action_mat = self.get_cell_matrices(game_data, occupied_cells)
+        attack_mat = self.attack_action_vec(cell_action_mat)
+        defense_mat = self.defense_action_vec(cell_action_mat)
+        life_mat = self.life_vec(cell_info_mat)
+        attack_def_life_mat = attack_mat - (defense_mat * life_mat)
+
+        self.attack_action_vec()
+
         # update game info then process each cell transition
         new_game_state = self.transition_state(game_state_copy)
         new_game_state.team_grid = self.get_simulated_cell_transitions(new_game_state.get_cell_grid())

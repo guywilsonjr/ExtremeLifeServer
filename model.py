@@ -1,5 +1,6 @@
 from typing import Optional, List, TYPE_CHECKING
-from cells.cell import Cell
+from cells.cell_types import CellType, Cell, CellInfo
+
 if TYPE_CHECKING:
     from dataclasses import dataclass
 else:
@@ -47,7 +48,7 @@ class MatchRequestData:
 
 @dataclass
 class CellPlacement:
-    cell_type: str
+    cell_type: CellType
     team_number: int
     x_loc: int
     y_loc: int
@@ -56,7 +57,7 @@ class CellPlacement:
 @dataclass
 class GameState:
     current_turn: int
-    cell_placements: List[CellPlacement]
+    player_occupied_cells: List[CellInfo]
 
 
 @dataclass
@@ -65,6 +66,7 @@ class GameData:
     player1_req: MatchRequestData
     player2_req: MatchRequestData
     current_state: GameState
+    grid_length: int = 10
     awaiting_p1_placment: bool = True
     awaiting_p2_placment: bool = True
 
