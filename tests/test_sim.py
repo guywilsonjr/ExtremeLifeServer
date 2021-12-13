@@ -2,24 +2,12 @@ import requests
 from fastapi.testclient import TestClient
 
 from main import app
-from cells.cell_types import AttackCellData
 from controller import GameState, Controller
 
 
 
 testun1 = 'test-user-1'
 
-
-def test_cell():
-    cell = AttackCellData(
-        x_loc=0,
-        y_loc=0,
-        team_number=1,
-        grid_length=6,
-        grid_height=5)
-
-    print(cell)
-    assert cell.attack == 1.0
 
 
 def test_sim():

@@ -3,6 +3,7 @@ from icecream import ic
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
+from cells.cell_types import CellType
 from datamanager import DataManager
 from model import (
     FindMatchRequest,
@@ -44,6 +45,11 @@ def list_users() -> List[PlayerProfile]:
     return dm.list_player_profiles()
 
 
+@app.get("/cell/types", response_model=List[PlayerProfile])
+def list_users() -> List[PlayerProfile]:
+    return [cell_type.value for cell_type in CellType]
+
+
 @app.post("/actionscript", response_model=None)
 def validate_script(script_name: str, file: UploadFile = File(...)) -> None:
     acmr = simulator.create_action_script(script_name, file)
@@ -52,7 +58,7 @@ def validate_script(script_name: str, file: UploadFile = File(...)) -> None:
 
 @app.get("/actionscript", response_model=List[ActionScriptMetaResp])
 def list_predefined_actions() -> List[ActionScriptMetaResp]:
-    return [ActionScriptMetaResp(ac.resp.script_id, ac.resp.script_name) for ac in dm.list_action_scripts()]
+    return [ActionScriptMetaResp(ac.resp.action_script_id, ac.resp.script_name) for ac in dm.list_action_scripts()]
 
 
 @app.get("/game/{game_id}")
@@ -93,7 +99,7 @@ def simulate_state(game_id: int) -> GameData:
 
 @app.put("/game/{game_id}", response_model=GameData)
 def NOT_DONE_simulate_next_step(game_id: int) -> GameData:
-    game = simulator.simulate_step(dm.get_game(game_id))
+    game = simulator.simulate_next_state(game_id)
     return game
 
 

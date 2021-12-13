@@ -1,33 +1,30 @@
 from dataclasses import dataclass
+from enum import Enum
+from cells.cell import Cell, CellGrid, CellEffect, CellEffectType, CellData, CellStats
 
-from cells.cell import Cell, CellGrid, CellEffect, CellEffectType, CellData
 
 specializing_factor = 2
 
 
 @dataclass
-class AttackCellData(CellData):
-    def __post_init__(self):
-        self.attack = 1.0
+class AttackCellStats(CellStats):
+    attack = 2.0
 
 
 @dataclass
-class DefenseCellData(CellData):
-    def __post_init__(self):
-        self.armor = 1.0
+class DefenseCellStats(CellStats):
+    armor = 2.0
 
 
 @dataclass
-class ReplicateCellData(CellData):
-    def __post_init__(self):
-        self.replicativity = 1.0
+class ReplicateCellStats(CellStats):
+    replicativity = 2.0
 
 
 @dataclass
-class ViralCellData(CellData):
-    def __post_init__(self):
-        self.virality = 1.0
-        self.antivirality = 1.0
+class ViralCellStats(CellStats):
+    virality = 2.0
+    antivirality = 2.0
 
 
 class AttackCell(Cell):
@@ -83,3 +80,10 @@ class ViralCell(Cell):
             return CellEffect(CellEffectType.INFECT_EFFECT, target.x_loc, target.y_loc)
         else:
             return CellEffect(CellEffectType.DEFEND_EFFECT, self.data.x_loc, self.data.y_loc)
+
+
+class CellType(Enum):
+    REPLICATE = 'REPLICATE'
+    ATTACK = 'ATTACK'
+    DEFEND = 'DEFEND'
+    INFECT = 'INFECT'

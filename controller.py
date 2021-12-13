@@ -3,7 +3,7 @@ import time
 from random import Random
 from fastapi import UploadFile, File
 from icecream import ic
-
+from fastapi import HTTPException
 from cells.cell import CellEffectType
 import numpy as np
 from model import (
@@ -66,7 +66,19 @@ class Controller:
         self.dm.create_game(game_data)
         return new_game_id
 
+    def validate_find_match_request(self, req: FindMatchRequest) -> None:
+        user_profile = self.dm.get_profile_by_user_id(req.user_id)
+        action_script = self.dm.get_actionscript(req.action_script_id)
+        messages = []
+        if not user_profile:
+            messages.append(f'Invalid user_id: {req.user_id}')
+        if not action_script:
+            messages.append(f'Invalid action_script_id: f{req.action_script_id}')
+        if messages:
+            raise HTTPException(status_code=404, detail='\n'.join(messages))
+
     def process_match(self, init_req: FindMatchRequest) -> FindMatchRequest:
+        self.validate_find_match_request(init_req)
         existing_player_req = self.dm.get_match_request_by_user_id(init_req.user_id)
         if existing_player_req:
             return existing_player_req
@@ -129,7 +141,7 @@ class Controller:
             row = cell_grid[i]
             for j in range(num_cols):
                 cell = row[j]
-                cell_effect = cell.simulate_step(cell_grid)
+                cell_effect = cell.simulate_next_state(cell_grid)
                 if cell_effect.effect_type == CellEffectType.ATTACK_EFFECT:
                     attack_matrix[cell_effect.effect_x_loc, cell_effect.effect_y_loc] = cell_effect
                 elif cell_effect.effect_type == CellEffectType.DEFEND_EFFECT:
@@ -141,7 +153,11 @@ class Controller:
 
         return attack_matrix
 
-    def simulate_step(self, game: GameData) -> GameData:
+    def simulate_next_state(self, game_id: int) -> GameData:
+        game = self.dm.get_game(game_id)
+        if not game:
+            raise
+        game: GameData = None
         game_state = game
         game_state_copy = copy.deepcopy(game_state)
         # update game info then process each cell transition

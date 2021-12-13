@@ -1,4 +1,4 @@
-from abc import abstractmethod, ABC
+from abc import abstractmethod
 from enum import Enum, auto
 from typing import Set, List, Optional
 from pydantic.dataclasses import dataclass
@@ -12,13 +12,6 @@ class CellEffectType(Enum):
     INFECT_EFFECT = auto()
 
 
-class CellType(Enum):
-    REPLICATE = auto()
-    ATTACK = auto()
-    DEFEND = auto()
-    INFECT = auto()
-
-
 @dataclass
 class CellEffect:
     effect_type: CellEffectType
@@ -27,23 +20,42 @@ class CellEffect:
 
 
 @dataclass
-class CellData(ABC):
+class CellStats:
+    armor: float = 1.0
+    attack: float = 1.0
+    life: float = 1.0
+    replicativity: float = 1.0
+    stability: float = 1.0
+    virality: float = 1.0
+    antivirality: float = 1.0
+
+
+@dataclass
+class CellData:
     x_loc: int
     y_loc: int
     team_number: int
     grid_length: int
     grid_height: int
-    armor: float = 0.1
-    attack: float = 0.1
+    armor: float = 1.0
+    attack: float = 1.0
     life: float = 1.0
-    replicativity: float = 0.1
+    replicativity: float = 1.0
     stability: float = 1.0
-    virality: float = 0.1
+    virality: float = 1.0
     antivirality: float = 1.0
 
 
+@dataclass
+class CellInfo:
+    x_loc: int
+    y_loc: int
+    team_number: int
+    life: float
+
+
 EMPTY_CELL_DATA = None
-CellGrid = npt.NDArray[CellData]
+CellGrid = npt.NDArray[Optional[CellData]]
 CellGridData = List[List[Optional[CellData]]]
 
 

@@ -19,7 +19,7 @@ class PlayerProfile:
 
 @dataclass
 class ActionScriptMetaResp:
-    script_id: int
+    action_script_id: int
     script_name: str
 
 
