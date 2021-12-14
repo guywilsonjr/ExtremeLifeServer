@@ -82,10 +82,16 @@ def ensure_session_not_found(session_id: int):
 def mock_game_session(game_id: int):
     from datamanager import DataManager
     import model
-    req1 = model.MatchRequestData(user_id=1, username='testusername1', request_id=0, action_script_id=100, is_match_complete=None, game_id=None)
-    req2 = model.MatchRequestData(user_id=2, username='testusername2', request_id=0, action_script_id=200, is_match_complete=None, game_id=None)
     gamestate = model.GameState(0, [])
-    game = model.GameData(game_id=game_id, player1_req=req1, player2_req=req2, current_state=gamestate)
+    game = model.GameData(
+        game_id=game_id,
+        current_state=gamestate,
+        awaiting_placements=True,
+        p1_user_id=0,
+        p2_user_id=1,
+        max_turns=100,
+        awaiting_p1=True,
+        awaiting_p2=True)
     dm = DataManager()
     dm.create_game(game)
     yield game_id

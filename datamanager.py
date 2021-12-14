@@ -2,7 +2,7 @@ import os
 from dataclasses import asdict
 from typing import Union, List, Optional, Dict
 from tinydb import TinyDB, Query
-from model import FindMatchRequest, ActionScriptMeta, GameData, MatchRequestData, PlayerProfile
+from model import ActionScriptMeta, GameData, MatchRequestData, PlayerProfile
 
 DB_LOCATION = '.db/'
 os.makedirs(DB_LOCATION) if not os.path.exists(DB_LOCATION) else None

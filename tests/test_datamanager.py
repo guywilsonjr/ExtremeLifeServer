@@ -2,8 +2,6 @@ import datamanager as testmodule
 import logging
 import model
 
-req1 = model.MatchRequestData(user_id=1, username='testusername1', request_id=0, action_script_id=100, is_match_complete=None, game_id=None)
-req2 = model.MatchRequestData(user_id=2, username='testusername2', request_id=0, action_script_id=200, is_match_complete=None, game_id=None)
 gamestate = model.GameState(0,[])
 
 logging.getLogger().setLevel(logging.DEBUG)
@@ -13,31 +11,28 @@ def test_get_game():
     game_id = 0
     expected_value = model.GameData(**{
         'game_id': game_id,
-        'awaiting_p1_placment': True,
-        'awaiting_p2_placment': True,
-        'player1_req': {
-            'user_id': 1,
-            'username': 'testusername1',
-            'request_id': 0,
-            'action_script_id': 100,
-            'is_match_complete': None,
-            'game_id': None
-        },
-        'player2_req': {
-            'user_id': 2,
-            'username': 'testusername2',
-            'request_id': 0,
-            'action_script_id': 200,
-            'is_match_complete': None,
-            'game_id': None
-        },
+        'awaiting_p1': True,
+        'awaiting_p2': True,
+        'max_turns': 100,
+        'awaiting_placements': True,
+        'p1_user_id': 0,
+        'p2_user_id': 1,
         'current_state': {
             'current_turn': 0,
             'player_occupied_cells': []
         }
     })
     dm = testmodule.DataManager()
-    thegame = model.GameData(game_id=game_id, player1_req=req1, player2_req=req2, current_state=gamestate)
+    thegame = model.GameData(
+        game_id=game_id,
+        current_state=gamestate,
+        awaiting_p1=True,
+        awaiting_p2=True,
+        awaiting_placements=True,
+        p1_user_id=0,
+        p2_user_id=1,
+        max_turns=100
+    )
     dm.create_game(thegame)
     # Act
     output_value = dm.get_game(game_id)
@@ -53,7 +48,16 @@ def test_validate_game_id_validated():
     game_id = 0
     expected_value = True
     dm = testmodule.DataManager()
-    thegame = model.GameData(game_id=game_id, player1_req=req1, player2_req=req2, current_state=gamestate)
+    thegame = model.GameData(
+        game_id=game_id,
+        awaiting_placements=True,
+        current_state=gamestate,
+        awaiting_p1=True,
+        awaiting_p2=True,
+        p1_user_id=0,
+        p2_user_id=1,
+        max_turns=100
+    )
     dm.create_game(thegame)
     # Act
     output_value = dm.validate_game_id(game_id)
@@ -80,7 +84,16 @@ def test_validate_game_id_invalidated():
 def test_get_games():
     dm = testmodule.DataManager()
     game_id = 99
-    thegame = model.GameData(game_id=game_id, player1_req=req1, player2_req=req2, current_state=gamestate)
+    thegame = model.GameData(
+        game_id=game_id,
+        awaiting_placements=True,
+        current_state=gamestate,
+        awaiting_p1=True,
+        awaiting_p2=True,
+        p2_user_id=1,
+        p1_user_id=0,
+        max_turns=100
+    )
     dm.create_game(thegame)
     games = dm.get_games()
     print("Games: %s" % games)

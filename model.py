@@ -61,14 +61,24 @@ class GameState:
 
 
 @dataclass
+class ScoreCard:
+    p1_score: int
+    p2_score: int
+
+
+@dataclass
 class GameData:
     game_id: int
-    player1_req: MatchRequestData
-    player2_req: MatchRequestData
+    max_turns: int
+    p1_user_id: int
+    p2_user_id: int
     current_state: GameState
+    awaiting_p1: bool
+    awaiting_p2: bool
+    awaiting_placements: bool
     grid_length: int = 10
-    awaiting_p1_placment: bool = True
-    awaiting_p2_placment: bool = True
+    is_game_over: bool = False
+    score_card: Optional[ScoreCard] = None
 
 
 @dataclass

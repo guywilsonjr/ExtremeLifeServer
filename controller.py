@@ -23,6 +23,7 @@ from model import (
 
 from datamanager import DataManager
 
+MAX_TURNS = 100
 
 class Controller:
     def __init__(self):
@@ -66,13 +67,18 @@ class Controller:
         self.dm.create_actionscript(ac)
         return acmr
 
-    def create_match(self, req1: FindMatchRequest, req2: FindMatchRequest) -> int:
+    def create_game(self, p1_user_id: int, p2_user_id: int) -> int:
         new_game_id = self.get_random_id()
         game_data = GameData(
             game_id=new_game_id,
-            player1_req=req1,
-            player2_req=req2,
-            current_state=GameState())
+            p1_user_id=p1_user_id,
+            p2_user_id=p2_user_id,
+            awaiting_placements=True,
+            current_state=GameState(0,[]),
+            awaiting_p1=True,
+            awaiting_p2=True,
+            max_turns=100
+        )
         self.dm.create_game(game_data)
         return new_game_id
 
@@ -117,7 +123,7 @@ class Controller:
                         existing_player_req,
                         '\n Matching req\n',
                         matching_req)
-                    new_game_id = self.create_match(existing_player_req, matching_req)
+                    new_game_id = self.create_game(existing_player_req.user_id, matching_req.user_id)
                     ic('Setting new game ids to', new_game_id)
                     existing_player_req = MatchRequestData(
                         user_id=existing_player_req.user_id,
@@ -254,8 +260,8 @@ class Controller:
         game_data_dict = asdict(game_data)
         game_data_dict['current_state']['player_occupied_cells'] = next_cells
         game_data_dict['current_state']['current_turn'] = game_data.current_state.current_turn + 1
-        game_data_dict['awaiting_p1_placement'] = False
-        game_data_dict['awaiting_p2_placement'] = False
+        game_data_dict['awaiting_p1'] = False
+        game_data_dict['awaiting_p2'] = False
         new_game_data = GameData(**game_data_dict)
         self.dm.update_game(new_game_data)
         return new_game_data
