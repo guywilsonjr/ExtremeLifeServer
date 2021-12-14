@@ -9,6 +9,7 @@ os.makedirs(DB_LOCATION) if not os.path.exists(DB_LOCATION) else None
 PROFILE_TN = 'profile'
 ACTIONSCRIPT_TN = 'actionscripts'
 GAME_TN = 'games'
+OLD_GAME_TN = 'old_game_data'
 MATCH_REQUEST_TN = 'matchrequests'
 
 GameDataType = Union[ActionScriptMeta, MatchRequestData, GameData, PlayerProfile]
@@ -42,6 +43,15 @@ class DataManager:
         return match_request_data
 
     def create_game(self, game: GameData) -> None:
+        self.create_entity(game, GAME_TN)
+
+    def create_old_game(self, game: GameData) -> None:
+        self.create_entity(game, OLD_GAME_TN)
+
+    def update_game(self, game: GameData) -> None:
+        old_game = self.get_game(game.game_id)
+        self.create_old_game(old_game)
+        self.remove_game(game.game_id)
         self.create_entity(game, GAME_TN)
 
     def get_game(self, game_id: int) -> Optional[GameData]:

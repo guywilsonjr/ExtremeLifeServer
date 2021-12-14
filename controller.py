@@ -1,4 +1,6 @@
 import time
+from copy import deepcopy
+from dataclasses import asdict
 from random import Random
 from typing import List, Set, Optional
 
@@ -26,6 +28,7 @@ class Controller:
     def __init__(self):
         self.dm = DataManager()
         self.random = Random(time.time_ns())
+        self.defense_vec = np.vectorize(self.get_cell_defense)
         self.defense_action_vec = np.vectorize(self.get_cell_defend_action)
         self.attack_action_vec = np.vectorize(self.get_cell_attack_action)
         self.life_vec = np.vectorize(self.get_cell_life)
@@ -186,7 +189,14 @@ class Controller:
         if cell_action.effect_type == CellActionType.DEFEND_ACTION:
             return defense * 2
         else:
-            return defense
+            return 0
+
+    @staticmethod
+    def get_cell_defense(cell_info: Optional[CellInfo]) -> float:
+        if not cell_info:
+            return 0
+        else:
+            return CELL_MAPPINGS[cell_info.cell_type].get_stats().defense
 
     @staticmethod
     def get_cell_life(cell_info: Optional[CellInfo]) -> float:
@@ -220,21 +230,35 @@ class Controller:
         game_data = self.dm.get_game(game_id)
         if not game_data:
             raise HTTPException(status_code=404, detail=f'Game not found: {game_id}')
-        next_turn = game_data.current_state.current_turn + 1
+
         occupied_cells = game_data.current_state.player_occupied_cells
         cell_info_mat, cell_action_mat = self.get_cell_matrices(game_data, occupied_cells)
-        attack_mat = self.attack_action_vec(cell_action_mat)
-        defense_mat = self.defense_action_vec(cell_action_mat)
+        defense_mat = self.defense_vec(cell_info_mat)
+        attack_target_mat = self.attack_action_vec(cell_action_mat)
+        defense_target_mat = self.defense_action_vec(cell_action_mat)
+        effective_defense_mat = defense_mat * defense_target_mat
+        calc_mat = attack_target_mat - effective_defense_mat
+        calc_exp_mat = np.exp2(calc_mat)
+        # Also could consider using defense*life in calculation
         life_mat = self.life_vec(cell_info_mat)
-        attack_def_life_mat = attack_mat - (defense_mat * life_mat)
+        rem_life_mat = life_mat - calc_exp_mat
 
-        self.attack_action_vec()
+        next_cells = []
+        for occ_cell in occupied_cells:
+            cell_dict_copy = asdict(occ_cell)
+            rem_life = rem_life_mat[occ_cell.x_loc][occ_cell.y_loc]
+            if rem_life > 0:
+                cell_dict_copy['life'] = rem_life
+                next_cells.append(CellInfo(**cell_dict_copy))
 
-        # update game info then process each cell transition
-        new_game_state = self.transition_state(game_state_copy)
-        new_game_state.team_grid = self.get_simulated_cell_transitions(new_game_state.get_cell_grid())
-        self.latest_state = new_game_state
-        self.game_states.append(self.latest_state)
+        game_data_dict = asdict(game_data)
+        game_data_dict['current_state']['player_occupied_cells'] = next_cells
+        game_data_dict['current_state']['current_turn'] = game_data.current_state.current_turn + 1
+        game_data_dict['awaiting_p1_placement'] = False
+        game_data_dict['awaiting_p2_placement'] = False
+        new_game_data = GameData(**game_data_dict)
+        self.dm.update_game(new_game_data)
+        return new_game_data
 
 
 
