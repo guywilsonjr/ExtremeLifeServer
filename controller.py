@@ -92,8 +92,7 @@ class Controller:
         messages = []
         if not user_profile:
             messages.append(f'Invalid user_id: {req.user_id}')
-        if not action_script:
-            messages.append(f'Invalid action_script_id: f{req.action_script_id}')
+
         if messages:
             raise HTTPException(status_code=404, detail='\n'.join(messages))
 
