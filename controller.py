@@ -55,6 +55,11 @@ class Controller:
                 resilience=1.0
             ) for pl in placements.cell_placements]
         gcopy['current_state']['player_occupied_cells'] = info_placements
+        if placements.user_id == game_data.p1_user_id:
+            gcopy['awaiting_p1'] = False
+        elif placements.user_id == game_data.p2_user_id:
+            gcopy['awaiting_p2'] = False
+
         updated_game = GameData(**gcopy)
         self.dm.update_game(updated_game)
 
