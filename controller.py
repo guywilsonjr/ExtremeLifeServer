@@ -35,13 +35,28 @@ class Controller:
         self.attack_action_vec = np.vectorize(self.get_cell_attack_action)
         self.life_vec = np.vectorize(self.get_cell_life)
 
-    def print_state(self, state: GameState):
-        return
+    def print_state(self, game_data: GameData):
+        positions = {(cinf.x_loc, cinf.y_loc): cinf.team_number for cinf in game_data.current_state.player_occupied_cells}
+        grid = [[positions[i][j] if (i, j) in positions else 0 for j in range(game_data.grid_length) ] for i in range(game_data.grid_length)]
+        ic(grid)
 
     def update_placements(self, game_id: int, placements: InitialPlacementRequest):
-        # TODO
         game_data = self.dm.get_game(game_id)
-
+        if not game_data:
+            raise HTTPException(status_code=404, detail=f'Game not found: {game_id}')
+        gcopy = asdict(game_data)
+        info_placements = [
+            CellInfo(
+                x_loc=pl.x_loc,
+                y_loc=pl.y_loc,
+                team_number=pl.team_number,
+                cell_type=pl.cell_type,
+                life=1.0,
+                resilience=1.0
+            ) for pl in placements.cell_placements]
+        gcopy['current_state']['player_occupied_cells'] = info_placements
+        updated_game = GameData(**gcopy)
+        self.dm.update_game(updated_game)
 
     @staticmethod
     def transition_state(game_state: GameState) -> GameState:

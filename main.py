@@ -103,10 +103,9 @@ def simulate_next_step(game_id: int) -> GameData:
     return game
 
 
-@app.patch("/game/{game_id}")
-def set_initial_cells(game_id: int, placements: InitialPlacementRequest) -> Dict[str, str]:
-    simulator.update_placements(game_id, placements)
-    return {'Message': 'OK'}
+@app.patch("/game/{game_id}", response_model=GameData)
+def set_initial_cells(game_id: int, placements: InitialPlacementRequest) -> GameData:
+    return simulator.update_placements(game_id, placements)
 
 
 @app.post("/match", response_model=MatchRequestData)

@@ -53,7 +53,7 @@ class CellInfo:
     x_loc: int
     y_loc: int
     team_number: int
-    cell_type: CellType
+    cell_type: str
     life: float
     resilience: float
 

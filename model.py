@@ -48,7 +48,7 @@ class MatchRequestData:
 
 @dataclass
 class CellPlacement:
-    cell_type: CellType
+    cell_type: str
     team_number: int
     x_loc: int
     y_loc: int
