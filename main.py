@@ -61,7 +61,7 @@ def list_predefined_actions() -> List[ActionScriptMetaResp]:
     return [ActionScriptMetaResp(ac.resp.action_script_id, ac.resp.script_name) for ac in dm.list_action_scripts()]
 
 
-@app.get("/game/{game_id}")
+@app.get("/game/{game_id}", response_model=GameData)
 def simulate_state(game_id: int) -> GameData:
     return simulator.simulate_next_state(game_id)
 
