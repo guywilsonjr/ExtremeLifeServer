@@ -91,7 +91,7 @@ class DataManager:
     def get_actionscript(self, actionscript_id: int) -> Optional[ActionScriptMeta]:
         gq = Query()
         action_script_data = self.db.table(ACTIONSCRIPT_TN).get(gq.resp.action_script_id == actionscript_id)
-        return ActionScriptMeta(**action_script_data)
+        return ActionScriptMeta(**action_script_data) if action_script_data else None
 
     def list_match_requests(self) -> List[MatchRequestData]:
         return [MatchRequestData(**req) for req in self.list_entity(MATCH_REQUEST_TN)]

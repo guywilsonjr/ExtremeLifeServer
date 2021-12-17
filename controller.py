@@ -100,6 +100,7 @@ class Controller:
     def process_match(self, init_req: FindMatchRequest) -> FindMatchRequest:
         self.validate_find_match_request(init_req)
         existing_player_req = self.dm.get_match_request_by_user_id(init_req.user_id)
+
         if existing_player_req:
             return existing_player_req
         else:
