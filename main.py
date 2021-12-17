@@ -63,38 +63,7 @@ def list_predefined_actions() -> List[ActionScriptMetaResp]:
 
 @app.get("/game/{game_id}")
 def simulate_state(game_id: int) -> GameData:
-    return {
-    "game_data": {
-        "grid_length": 2,
-        "grid_height": 2,
-        "player_cells": [
-            {
-                "x_loc": 2,
-                "y_loc": 2,
-                "team_number": -1, # red
-                "life": 1
-            },
-            {
-                "x_loc": 0,
-                "y_loc": 0,
-                "team_number": 1, # green
-                "life": 1
-            },
-            {
-                "x_loc": 1,
-                "y_loc": 1,
-                "team_number": -1, # red
-                "life": 1
-            },
-            {
-                "x_loc": 0,
-                "y_loc": 1,
-                "team_number": 1, # green
-                "life": 1
-            }
-        ]
-    }
-}
+    return simulator.simulate_next_state(game_id)
 
 
 @app.put("/game/{game_id}", response_model=GameData)

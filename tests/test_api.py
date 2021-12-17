@@ -1,23 +1,29 @@
-import json
-from io import BytesIO
+import os.path
+import shutil
 
-from hypothesis import given, assume
-from hypothesis.strategies import text, from_regex
+import pytest
+from hypothesis import given
+from hypothesis.strategies import from_regex
 from fastapi.testclient import TestClient
 from main import app
-client = TestClient(app)
 
 from model import PlayerProfile
 
 
-@given(from_regex(r'^\w+\Z'))
-def test_profile(username: str):
+@pytest.fixture(scope='module')
+def client():
+    if os.path.exists('./.db'):
+        shutil.rmtree('./.db')
+    client = TestClient(app)
+    return client
+
+
+@given(username=from_regex(r'^\w+\Z'))
+def test_profile(username: str, client: TestClient):
     response = client.post(f'/profile/{username}')
-    print(response.content)
     prof = PlayerProfile(**response.json())
-    print(prof)
     assert prof.username == username
     response = client.get(f'/profile')
-    assert filter(lambda x: x.username == username and x.user_id == prof.user_id ,[aprof for aprof in response.json()])
-
-
+    assert filter(
+        lambda x: x.username == username and x.user_id == prof.user_id,
+        [aprof for aprof in response.json()])
