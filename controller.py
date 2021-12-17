@@ -203,8 +203,8 @@ class Controller:
             return (cell_info_2.x_loc - cell_info_1.x_loc) <= 1 and (cell_info_2.y_loc - cell_info_1.y_loc) <= 1
 
     @classmethod
-    def get_cell_neighbors(cls, cell_info: CellInfo, player_occupied_cells: List[CellInfo]) -> Set[CellInfo]:
-        return {potential_neighbor for potential_neighbor in player_occupied_cells if cls.is_neighbor(cell_info, potential_neighbor)}
+    def get_cell_neighbors(cls, cell_info: CellInfo, player_occupied_cells: List[CellInfo]) -> List[CellInfo]:
+        return [potential_neighbor for potential_neighbor in player_occupied_cells if cls.is_neighbor(cell_info, potential_neighbor)]
 
     @staticmethod
     def get_cell_attack(cell_info: Optional[CellInfo]) -> float:
@@ -245,7 +245,9 @@ class Controller:
             return 0
 
     @classmethod
-    def get_cell_matrices(cls, grid_length: int, player_occupied_cells: List[CellInfo]):
+    def get_cell_matrices(cls, game_data: GameData):
+        grid_length = game_data.grid_length
+        player_occupied_cells = game_data.current_state.player_occupied_cells
         cell_info_mat = np.array([[None] * grid_length] * grid_length)
         cell_action_mat = np.array([[None] * grid_length] * grid_length)
 
@@ -253,7 +255,7 @@ class Controller:
             cell_type = cell_types.CELL_MAPPINGS[cur_cell.cell_type]
             cell_info_mat[cur_cell.x_loc][cur_cell.y_loc] = cur_cell
             neighbors = cls.get_cell_neighbors(cur_cell, player_occupied_cells)
-            action = cell_type.get_action(neighbors)
+            action = cell_type.get_action(cur_cell, neighbors)
             cell_action_mat[action.effect_x_loc][action.effect_y_loc] = action
 
         return cell_info_mat, cell_action_mat
@@ -264,7 +266,7 @@ class Controller:
             raise HTTPException(status_code=404, detail=f'Game not found: {game_id}')
 
         occupied_cells = game_data.current_state.player_occupied_cells
-        cell_info_mat, cell_action_mat = self.get_cell_matrices(game_data, occupied_cells)
+        cell_info_mat, cell_action_mat = self.get_cell_matrices(game_data)
         defense_mat = self.defense_vec(cell_info_mat)
         attack_target_mat = self.attack_action_vec(cell_action_mat)
         defense_target_mat = self.defense_action_vec(cell_action_mat)

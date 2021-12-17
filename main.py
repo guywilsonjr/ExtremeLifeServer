@@ -3,7 +3,6 @@ from icecream import ic
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
-from cells.cell_types import CellType
 from datamanager import DataManager
 from model import (
     FindMatchRequest,
@@ -47,7 +46,7 @@ def list_users() -> List[PlayerProfile]:
 
 @app.get("/cell/types", response_model=List[PlayerProfile])
 def list_users() -> List[PlayerProfile]:
-    return [cell_type.value for cell_type in CellType]
+    return ['ATTACK', 'DEFEND']
 
 
 @app.post("/actionscript", response_model=None)

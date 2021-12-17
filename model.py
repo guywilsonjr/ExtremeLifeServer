@@ -1,5 +1,5 @@
 from typing import Optional, List, TYPE_CHECKING
-from cells.cell_types import CellType, Cell, CellInfo
+from cells.cell_types import Cell, CellInfo
 
 if TYPE_CHECKING:
     from dataclasses import dataclass

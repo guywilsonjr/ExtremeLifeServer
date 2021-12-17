@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Set
+from typing import List
 
 
 class CellActionType(Enum):
@@ -41,13 +41,6 @@ class ViralCellStats(CellStats):
     antivirality = 2.0
 
 
-class CellType(Enum):
-    REPLICATE = 'REPLICATE'
-    ATTACK = 'ATTACK'
-    DEFEND = 'DEFEND'
-    INFECT = 'INFECT'
-
-
 @dataclass
 class CellInfo:
     x_loc: int
@@ -68,13 +61,13 @@ class CellAction:
 
 class Cell(ABCMeta):
     @staticmethod
-    def get_action(cell_info, neighbors: Set[CellInfo]) -> CellAction:
+    def get_action(cell_info, neighbors: List[CellInfo]) -> CellAction:
         return CellAction(cell_info, CellActionType.DEFEND_ACTION, 0, 0)
 
 
 class AttackCell(Cell):
     @staticmethod
-    def get_action(cell_info: CellInfo, neighbors: Set[CellInfo]) -> CellAction:
+    def get_action(cell_info: CellInfo, neighbors: List[CellInfo]) -> CellAction:
         return CellAction(cell_info, CellActionType.DEFEND_ACTION, 0, 0)
 
     @staticmethod
@@ -84,7 +77,7 @@ class AttackCell(Cell):
 
 class DefenseCell(Cell):
     @staticmethod
-    def get_action(cell_info: CellInfo, neighbors: Set[CellInfo]) -> CellAction:
+    def get_action(cell_info: CellInfo, neighbors: List[CellInfo]) -> CellAction:
         return CellAction(cell_info, CellActionType.DEFEND_ACTION, 0, 0)
 
     @staticmethod
@@ -94,7 +87,7 @@ class DefenseCell(Cell):
 
 class ReplicateCell(Cell):
     @staticmethod
-    def get_action(cell_info: CellInfo, neighbors: Set[CellInfo]) -> CellAction:
+    def get_action(cell_info: CellInfo, neighbors: List[CellInfo]) -> CellAction:
         return CellAction(cell_info, CellActionType.DEFEND_ACTION, 0, 0)
 
     @staticmethod
@@ -104,7 +97,7 @@ class ReplicateCell(Cell):
 
 class ViralCell(Cell):
     @staticmethod
-    def get_action(cell_info: CellInfo, neighbors: Set[CellInfo]) -> CellAction:
+    def get_action(cell_info: CellInfo, neighbors: List[CellInfo]) -> CellAction:
         return CellAction(cell_info, CellActionType.DEFEND_ACTION, 0, 0)
 
     @staticmethod
@@ -113,10 +106,10 @@ class ViralCell(Cell):
 
 
 CELL_MAPPINGS = {
-    CellType.REPLICATE: ReplicateCell,
-    CellType.ATTACK: AttackCell,
-    CellType.DEFEND: DefenseCell,
-    CellType.INFECT: ViralCell
+    'REPLICATE': ReplicateCell,
+    'ATTACK': AttackCell,
+    'DEFEND': DefenseCell,
+    'INFECT': ViralCell
 }
 
 
