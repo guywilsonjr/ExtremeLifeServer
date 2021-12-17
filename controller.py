@@ -62,8 +62,10 @@ class Controller:
         acmr = ActionScriptMetaResp(action_script_id=self.get_random_id(), script_name=script_name)
         pathname = script_name + str(self.get_random_id()) + '.py'
         with open(pathname, 'wb') as acfile:
-            acfile.write(file.read())
-        ac = ActionScriptMeta(resp=acmr, path=pathname)
+            acfile.write(acfile.read())
+        ac = ActionScriptMeta(
+            resp=acmr,
+            path=pathname)
         self.dm.create_actionscript(ac)
         return acmr
 
