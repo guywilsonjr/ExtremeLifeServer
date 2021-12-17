@@ -2,7 +2,7 @@ import datamanager as testmodule
 import logging
 import model
 
-gamestate = model.GameState(0,[])
+gamestate = model.GameState(0, [])
 
 logging.getLogger().setLevel(logging.DEBUG)
 

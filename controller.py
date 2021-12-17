@@ -25,6 +25,7 @@ from datamanager import DataManager
 
 MAX_TURNS = 100
 
+
 class Controller:
     def __init__(self):
         self.dm = DataManager()
@@ -38,8 +39,9 @@ class Controller:
         return
 
     def update_placements(self, game_id: int, placements: InitialPlacementRequest):
+        # TODO
         game_data = self.dm.get_game(game_id)
-        return
+
 
     @staticmethod
     def transition_state(game_state: GameState) -> GameState:
@@ -88,7 +90,7 @@ class Controller:
 
     def validate_find_match_request(self, req: FindMatchRequest) -> None:
         user_profile = self.dm.get_profile_by_user_id(req.user_id)
-        action_script = self.dm.get_actionscript(req.action_script_id)
+        # action_script = self.dm.get_actionscript(req.action_script_id)
         messages = []
         if not user_profile:
             messages.append(f'Invalid user_id: {req.user_id}')
