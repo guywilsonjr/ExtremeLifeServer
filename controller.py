@@ -269,13 +269,13 @@ class Controller:
         # print(calc_exp_mat)
         # Also could consider using defense*life in calculation
         life_mat = life_vec(cell_info_mat)
-        rem_life_mat = life_mat - abs(calc_exp_mat/4)
+        rem_life_mat = life_mat - abs(calc_exp_mat/10)
 
         next_cells = []
         for occ_cell in occupied_cells:
             cell_dict_copy = asdict(occ_cell)
             rem_life = rem_life_mat[occ_cell.x_loc][occ_cell.y_loc]
-            if rem_life > 0:
+            if rem_life > 10 ** -2:
                 cell_dict_copy['life'] = rem_life
                 next_cells.append(CellInfo(**cell_dict_copy))
 
