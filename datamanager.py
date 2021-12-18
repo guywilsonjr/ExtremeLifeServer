@@ -49,7 +49,8 @@ class DataManager:
         self.create_entity(game, OLD_GAME_TN)
 
     def update_game(self, game: GameData) -> None:
-        self.remove_game(game.game_id)
+        while(self.get_game(game.game_id)):
+            self.remove_game(game.game_id)
         self.create_entity(game, GAME_TN)
 
     def get_game(self, game_id: int) -> Optional[GameData]:
