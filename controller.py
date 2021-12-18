@@ -20,7 +20,7 @@ from model import (
     MatchRequestData,
     PlayerProfile,
     ActionScriptMetaResp,
-    ActionScriptMeta, InitialPlacementRequest, CellInfo)
+    ActionScriptMeta, InitialPlacementRequest, CellInfo, ScoreCard)
 
 from datamanager import DataManager
 
@@ -87,7 +87,7 @@ def get_cell_attack_action(cell_action: Optional[CellAction]) -> float:
         return 0
 
     if cell_action.effect_type == CellActionType.ATTACK_ACTION:
-        return CELL_MAPPINGS[cell_action.cell_info.cell_type].get_stats().attack * random.random()
+        return float(CELL_MAPPINGS[cell_action.cell_info.cell_type].get_stats().attack) * random_gen.random()
     else:
         return 0
 
@@ -112,12 +112,12 @@ defense_vec = np.vectorize(get_cell_defense)
 defense_action_vec = np.vectorize(get_cell_defend_action)
 attack_action_vec = np.vectorize(get_cell_attack_action)
 life_vec = np.vectorize(get_cell_life)
-
+random_gen = Random(time.time_ns())
 
 class Controller:
     def __init__(self):
         self.dm = DataManager()
-        self.random = Random(time.time_ns())
+
 
     def update_placements(self, game_id: int, placements: InitialPlacementRequest):
         game_data = self.dm.get_game(game_id)
@@ -149,7 +149,7 @@ class Controller:
         print(self.dm.get_game(game_id))
 
     def get_random_id(self):
-        return self.random.randint(0, 2 ** 16)
+        return random_gen.randint(0, 2 ** 16)
 
     def create_user(self, username: str):
         user_id = self.get_random_id()
@@ -180,7 +180,8 @@ class Controller:
             current_state=GameState(0,[]),
             awaiting_p1=True,
             awaiting_p2=True,
-            max_turns=100
+            max_turns=100,
+            score_card=None
         )
         self.dm.create_game(game_data)
         return new_game_id
@@ -254,37 +255,58 @@ class Controller:
         if not game_data:
             raise HTTPException(status_code=404, detail=f'Game not found: {game_id}')
 
-        occupied_cells = game_data.current_state.player_occupied_cells
+        if game_data.is_game_over:
+            return game_data
+
+        occupied_cells = copy.deepcopy(game_data.current_state.player_occupied_cells)
         cell_info_mat, cell_action_mat = get_cell_matrices(game_data)
         # print(cell_info_mat)
-        # print(cell_action_mat)
+        print(cell_action_mat)
         defense_mat = defense_vec(cell_info_mat)
         attack_target_mat = attack_action_vec(cell_action_mat)
         ic(attack_target_mat)
         defense_target_mat = defense_action_vec(cell_action_mat)
         effective_defense_mat = defense_mat * defense_target_mat
-        calc_mat = attack_target_mat - effective_defense_mat
-        # print(calc_mat)
+        calc_mat = effective_defense_mat - (attack_target_mat + 5)
+        ic(calc_mat)
         calc_exp_mat = np.exp2(calc_mat)
-        # print(calc_exp_mat)
+        ic(calc_exp_mat)
         # Also could consider using defense*life in calculation
-        life_mat = life_vec(cell_info_mat)
-        rem_life_mat = life_mat - abs(calc_exp_mat/10)
-
+        life_mat = life_vec(cell_info_mat) * defense_mat
+        ic(life_mat)
+        rem_life_mat = life_mat - calc_exp_mat
+        ic(rem_life_mat)
         next_cells = []
+        p1_score = 0
+        p2_score = 0
         for occ_cell in occupied_cells:
-            cell_dict_copy = asdict(occ_cell)
+            cell_dict_copy = asdict(copy.deepcopy(occ_cell))
             rem_life = rem_life_mat[occ_cell.x_loc][occ_cell.y_loc]
-            if rem_life > 10 ** -2:
+            if rem_life > 10 ** -3:
                 cell_dict_copy['life'] = rem_life
                 next_cells.append(CellInfo(**cell_dict_copy))
+                if occ_cell.team_number == 1:
+                    p1_score += rem_life
+                else:
+                    p2_score += rem_life
 
-        #print(next_cells)
-        game_data_dict = asdict(game_data)
+
+        is_game_over = False
+        if p1_score == 0:
+            is_game_over = True
+        elif p2_score == 0:
+            is_game_over = True
+        elif game_data.current_state.current_turn >= game_data.max_turns:
+            is_game_over = True
+
+        game_data_dict = asdict(copy.deepcopy(game_data))
         game_data_dict['current_state']['player_occupied_cells'] = next_cells
         game_data_dict['current_state']['current_turn'] = game_data.current_state.current_turn + 1
+        game_data_dict['score_card'] = ScoreCard(**{'p1_score': p1_score, 'p2_score': p2_score})
+        game_data_dict['is_game_over'] = is_game_over
         game_data_dict['awaiting_p1'] = False
         game_data_dict['awaiting_p2'] = False
+        print(game_data_dict)
         new_game_data = GameData(**game_data_dict)
         self.dm.update_game(new_game_data)
         return new_game_data

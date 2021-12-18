@@ -60,8 +60,8 @@ class GameState:
 
 @dataclass
 class ScoreCard:
-    p1_score: int
-    p2_score: int
+    p1_score: float
+    p2_score: float
 
 
 @dataclass
@@ -74,9 +74,9 @@ class GameData:
     awaiting_p1: bool
     awaiting_p2: bool
     awaiting_placements: bool
+    score_card: Optional[ScoreCard]
     grid_length: int = GRID_LENGTH
     is_game_over: bool = False
-    score_card: Optional[ScoreCard] = None
 
 
 @dataclass
