@@ -76,7 +76,7 @@ class GameData:
     awaiting_p1: bool
     awaiting_p2: bool
     awaiting_placements: bool
-    grid_length: int = 10
+    grid_length: int = 4
     is_game_over: bool = False
     score_card: Optional[ScoreCard] = None
 

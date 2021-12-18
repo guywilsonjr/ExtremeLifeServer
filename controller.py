@@ -1,8 +1,7 @@
 import time
-from copy import deepcopy
 from dataclasses import asdict
 from random import Random
-from typing import List, Set, Optional
+from typing import List, Optional
 
 from fastapi import UploadFile, File
 from icecream import ic
@@ -61,7 +60,11 @@ class Controller:
             gcopy['awaiting_p2'] = False
 
         updated_game = GameData(**gcopy)
+        print('Inserting update:')
+        print(updated_game)
         self.dm.update_game(updated_game)
+        print('Retrieved:')
+        print(self.dm.get_game(game_id))
 
     @staticmethod
     def transition_state(game_state: GameState) -> GameState:
@@ -234,13 +237,13 @@ class Controller:
     def get_cell_life(cell_info: Optional[CellInfo]) -> float:
         return cell_info.life if cell_info else 0
 
-    @staticmethod
-    def get_cell_attack_action(cell_action: Optional[CellAction]) -> float:
+
+    def get_cell_attack_action(self, cell_action: Optional[CellAction]) -> float:
         if not cell_action:
             return 0
 
         if cell_action.effect_type == CellActionType.ATTACK_ACTION:
-            return CELL_MAPPINGS[cell_action.cell_info.cell_type].get_stats().attack
+            return CELL_MAPPINGS[cell_action.cell_info.cell_type].get_stats().attack * self.random.random()
         else:
             return 0
 
@@ -267,15 +270,20 @@ class Controller:
 
         occupied_cells = game_data.current_state.player_occupied_cells
         cell_info_mat, cell_action_mat = self.get_cell_matrices(game_data)
+        print(cell_info_mat)
+        print(cell_action_mat)
         defense_mat = self.defense_vec(cell_info_mat)
         attack_target_mat = self.attack_action_vec(cell_action_mat)
+
         defense_target_mat = self.defense_action_vec(cell_action_mat)
         effective_defense_mat = defense_mat * defense_target_mat
         calc_mat = attack_target_mat - effective_defense_mat
+        print(calc_mat)
         calc_exp_mat = np.exp2(calc_mat)
+        print(calc_exp_mat)
         # Also could consider using defense*life in calculation
         life_mat = self.life_vec(cell_info_mat)
-        rem_life_mat = life_mat - calc_exp_mat
+        rem_life_mat = life_mat - calc_exp_mat/4
 
         next_cells = []
         for occ_cell in occupied_cells:
@@ -284,7 +292,7 @@ class Controller:
             if rem_life > 0:
                 cell_dict_copy['life'] = rem_life
                 next_cells.append(CellInfo(**cell_dict_copy))
-
+        print(next_cells)
         game_data_dict = asdict(game_data)
         game_data_dict['current_state']['player_occupied_cells'] = next_cells
         game_data_dict['current_state']['current_turn'] = game_data.current_state.current_turn + 1

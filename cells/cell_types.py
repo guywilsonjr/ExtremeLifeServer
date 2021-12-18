@@ -1,4 +1,4 @@
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta
 from dataclasses import dataclass
 from enum import Enum, auto
 from typing import List
@@ -68,7 +68,9 @@ class Cell(ABCMeta):
 class AttackCell(Cell):
     @staticmethod
     def get_action(cell_info: CellInfo, neighbors: List[CellInfo]) -> CellAction:
-        return CellAction(cell_info, CellActionType.DEFEND_ACTION, 0, 0)
+        for neigh in neighbors:
+            return CellAction(cell_info, CellActionType.ATTACK_ACTION, neigh.x_loc, neigh.y_loc)
+        return CellAction(cell_info, CellActionType.DEFEND_ACTION, cell_info.x_loc, cell_info.y_loc)
 
     @staticmethod
     def get_stats() -> AttackCellStats:
@@ -78,7 +80,9 @@ class AttackCell(Cell):
 class DefenseCell(Cell):
     @staticmethod
     def get_action(cell_info: CellInfo, neighbors: List[CellInfo]) -> CellAction:
-        return CellAction(cell_info, CellActionType.DEFEND_ACTION, 0, 0)
+        for neigh in neighbors:
+            return CellAction(cell_info, CellActionType.ATTACK_ACTION, neigh.x_loc, neigh.y_loc)
+        return CellAction(cell_info, CellActionType.DEFEND_ACTION, cell_info.x_loc, cell_info.y_loc)
 
     @staticmethod
     def get_stats() -> DefenseCellStats:
