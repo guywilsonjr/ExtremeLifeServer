@@ -25,6 +25,16 @@ from datamanager import DataManager
 MAX_TURNS = 100
 
 
+def print_state(game_data: GameData):
+    positions = {(cinf.x_loc, cinf.y_loc): str(cinf.team_number) +str(cinf.cell_type)[0] for cinf in game_data.current_state.player_occupied_cells}
+    ic(positions)
+    glen = game_data.grid_length
+    grid = [[0 for i in range(glen)] for j in range(glen)]
+    for (x_loc, y_loc), team_number in positions.items():
+        grid[x_loc][y_loc] = team_number
+    ic(grid)
+
+
 class Controller:
     def __init__(self):
         self.dm = DataManager()
@@ -34,21 +44,17 @@ class Controller:
         self.attack_action_vec = np.vectorize(self.get_cell_attack_action)
         self.life_vec = np.vectorize(self.get_cell_life)
 
-    def print_state(self, game_data: GameData):
-        positions = {(cinf.x_loc, cinf.y_loc): cinf.team_number for cinf in game_data.current_state.player_occupied_cells}
-        grid = [[positions[i][j] if (i, j) in positions else 0 for j in range(game_data.grid_length) ] for i in range(game_data.grid_length)]
-        ic(grid)
-
     def update_placements(self, game_id: int, placements: InitialPlacementRequest):
         game_data = self.dm.get_game(game_id)
         if not game_data:
             raise HTTPException(status_code=404, detail=f'Game not found: {game_id}')
         gcopy = asdict(game_data)
+        team_number = 1 if game_data.p1_user_id == placements.user_id else 2
         info_placements = [
             CellInfo(
                 x_loc=pl.x_loc,
                 y_loc=pl.y_loc,
-                team_number=pl.team_number,
+                team_number=team_number,
                 cell_type=pl.cell_type,
                 life=1.0,
                 resilience=1.0
@@ -88,7 +94,6 @@ class Controller:
         pathname = script_name + str(self.get_random_id()) + '.py'
         with open(pathname, 'wb') as acfile:
             data = file.read()
-            print(data)
             acfile.write(data)
         ac = ActionScriptMeta(
             resp=acmr,
@@ -237,7 +242,6 @@ class Controller:
     def get_cell_life(cell_info: Optional[CellInfo]) -> float:
         return cell_info.life if cell_info else 0
 
-
     def get_cell_attack_action(self, cell_action: Optional[CellAction]) -> float:
         if not cell_action:
             return 0
@@ -270,17 +274,17 @@ class Controller:
 
         occupied_cells = game_data.current_state.player_occupied_cells
         cell_info_mat, cell_action_mat = self.get_cell_matrices(game_data)
-        print(cell_info_mat)
-        print(cell_action_mat)
+        #print(cell_info_mat)
+        #print(cell_action_mat)
         defense_mat = self.defense_vec(cell_info_mat)
         attack_target_mat = self.attack_action_vec(cell_action_mat)
 
         defense_target_mat = self.defense_action_vec(cell_action_mat)
         effective_defense_mat = defense_mat * defense_target_mat
         calc_mat = attack_target_mat - effective_defense_mat
-        print(calc_mat)
+        #print(calc_mat)
         calc_exp_mat = np.exp2(calc_mat)
-        print(calc_exp_mat)
+        #print(calc_exp_mat)
         # Also could consider using defense*life in calculation
         life_mat = self.life_vec(cell_info_mat)
         rem_life_mat = life_mat - calc_exp_mat/4
@@ -292,7 +296,7 @@ class Controller:
             if rem_life > 0:
                 cell_dict_copy['life'] = rem_life
                 next_cells.append(CellInfo(**cell_dict_copy))
-        print(next_cells)
+        #print(next_cells)
         game_data_dict = asdict(game_data)
         game_data_dict['current_state']['player_occupied_cells'] = next_cells
         game_data_dict['current_state']['current_turn'] = game_data.current_state.current_turn + 1

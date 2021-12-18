@@ -7,9 +7,7 @@ else:
     from pydantic.dataclasses import dataclass
 
 
-GRID_LENGTH = 10
-GRID_WIDTH = 10
-EMPTY_CELL: Cell = None
+GRID_LENGTH: int = 10
 
 
 @dataclass
@@ -76,7 +74,7 @@ class GameData:
     awaiting_p1: bool
     awaiting_p2: bool
     awaiting_placements: bool
-    grid_length: int = 4
+    grid_length: int = GRID_LENGTH
     is_game_over: bool = False
     score_card: Optional[ScoreCard] = None
 

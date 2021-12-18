@@ -1,6 +1,9 @@
 import os.path
+import random
 import shutil
+import time
 from dataclasses import asdict
+from typing import Tuple, List, Dict
 
 import pytest
 from hypothesis import given, settings
@@ -8,9 +11,10 @@ from hypothesis.strategies import from_regex
 from fastapi.testclient import TestClient
 from icecream import ic
 
-from cells.cell_types import CellInfo
+from controller import print_state
 from main import app
-from model import PlayerProfile, InitialPlacementRequest, CellPlacement, FindMatchRequest, MatchRequestData
+from model import PlayerProfile, InitialPlacementRequest, CellPlacement, FindMatchRequest, MatchRequestData, \
+    GRID_LENGTH, GameData
 
 
 @pytest.fixture(scope='module')
@@ -32,6 +36,10 @@ def test_profile(username: str, client: TestClient):
         lambda x: x.username == username and x.user_id == prof.user_id,
         [aprof for aprof in response.json()])
 
+
+def get_updated_available_locs(available_locs: List[Tuple[int, int]], grid_length=10) -> Dict[str, int]:
+    myrandom = random.randint(0, 9)
+    next_locs = available_locs
 
 @given(username1=from_regex(r'^\w+\Z'), username2=from_regex(r'^\w+\Z'))
 @settings(max_examples=1, deadline=None)
@@ -60,27 +68,64 @@ def test_create_match(username1: str, username2: str, client: TestClient):
     md1 = MatchRequestData(**fmr1resp.json())
     fmr2resp = client.post('/match', json=asdict(fmr2))
     md2 = MatchRequestData(**fmr2resp.json())
-    print(asdict(md1), asdict(md2))
+    cell_range = int(GRID_LENGTH * 5 / 7)
+
+    available_locs = [(i, j) for i in range(cell_range) for j in range(cell_range)]
+    cell_type_map = {1: 'ATTACK', 0: 'DEFEND'}
+    p1_placements = []
+    p2_placements = []
+    for i in range(len(available_locs)):
+        max_index = len(available_locs) - 1
+        print(max_index)
+        print(i)
+        if max_index == 0:
+            break
+        x, y = available_locs.pop(random.randint(0, max_index) if max_index > 0 else 0)
+        p1_placements.append(
+            CellPlacement(
+                cell_type=cell_type_map[random.randint(0, 1)],
+                team_number=0,
+                x_loc=x,
+                y_loc=y))
+
+        max_index -= 1
+        if max_index == 0:
+            break
+        x, y = available_locs.pop(random.randint(0, max_index) if max_index > 0 else 0)
+        p2_placements.append(
+            CellPlacement(
+                cell_type=cell_type_map[random.randint(0, 1)],
+                team_number=0,
+                x_loc=x,
+                y_loc=y))
+
 
     req1 = InitialPlacementRequest(
         user_id=user_id1,
-        cell_placements=[CellPlacement(x_loc=i, y_loc=i, cell_type='ATTACK', team_number=0) for i in range(3)])
+        cell_placements=p1_placements)
 
 
     req2 = InitialPlacementRequest(
         user_id=user_id2,
-        cell_placements=[CellPlacement(x_loc=i, y_loc=i+1, cell_type='ATTACK', team_number=0) for i in range(3)])
+        cell_placements=p2_placements)
 
     ic(asdict(req1))
     ic(asdict(req2))
     client.patch(f'/game/{md2.game_id}', json=asdict(req1))
     gresp = client.get(f'/game/{md2.game_id}')
-    ic(gresp.json())
-    p2resp = client.patch(f'/game/{md2.game_id}', json=asdict(req2))
-    ic(p2resp.json())
+    print_state(GameData(**gresp.json()))
+
+    client.patch(f'/game/{md2.game_id}', json=asdict(req2))
+    gresp = client.get(f'/game/{md2.game_id}')
+    print_state(GameData(**gresp.json()))
     gresp = client.get(f'/game/{md2.game_id}')
     ic(gresp.json())
-    for i in range(10):
+    print_state(GameData(**gresp.json()))
+
+    for i in range(3):
         client.put(f'/game/{md2.game_id}')
         gresp = client.get(f'/game/{md2.game_id}')
-        print(gresp.json())
+        data_json = gresp.json()
+        data = GameData(**data_json)
+        print_state(data)
+
