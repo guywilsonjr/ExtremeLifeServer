@@ -120,7 +120,7 @@ def test_create_match(username1: str, username2: str, client: TestClient):
     ic(gresp.json())
     print_state(GameData(**gresp.json()))
 
-    for i in range(3):
+    for i in range(10):
         client.put(f'/game/{md2.game_id}')
         gresp = client.get(f'/game/{md2.game_id}')
         data_json = gresp.json()
