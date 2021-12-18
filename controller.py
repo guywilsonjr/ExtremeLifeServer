@@ -41,7 +41,7 @@ def is_neighbor(cell_info_1: CellInfo, cell_info_2: CellInfo) -> bool:
     if cell_info_1.x_loc == cell_info_2.x_loc and cell_info_1.y_loc == cell_info_2.y_loc:
         return False
     else:
-        return (cell_info_2.x_loc - cell_info_1.x_loc) <= 1 and (cell_info_2.y_loc - cell_info_1.y_loc) <= 1
+        return abs(cell_info_2.x_loc - cell_info_1.x_loc) <= 1 and abs(cell_info_2.y_loc - cell_info_1.y_loc) <= 1
 
 
 def get_cell_neighbors(cell_info: CellInfo, player_occupied_cells: List[CellInfo]) -> List[CellInfo]:
@@ -87,7 +87,7 @@ def get_cell_attack_action(cell_action: Optional[CellAction]) -> float:
         return 0
 
     if cell_action.effect_type == CellActionType.ATTACK_ACTION:
-        return float(CELL_MAPPINGS[cell_action.cell_info.cell_type].get_stats().attack) * random_gen.random()
+        return 0.2 # float(CELL_MAPPINGS[cell_action.cell_info.cell_type].get_stats().attack) * random_gen.random()
     else:
         return 0
 
@@ -267,14 +267,14 @@ class Controller:
         ic(attack_target_mat)
         defense_target_mat = defense_action_vec(cell_action_mat)
         effective_defense_mat = defense_mat * defense_target_mat
-        calc_mat = effective_defense_mat - (attack_target_mat + 5)
-        ic(calc_mat)
-        calc_exp_mat = np.exp2(calc_mat)
-        ic(calc_exp_mat)
+        #calc_mat = effective_defense_mat - (attack_target_mat + 5)
+        #ic(calc_mat)
+        #calc_exp_mat = np.exp2(calc_mat)
+        #ic(calc_exp_mat)
         # Also could consider using defense*life in calculation
         life_mat = life_vec(cell_info_mat) * defense_mat
         ic(life_mat)
-        rem_life_mat = life_mat - calc_exp_mat
+        rem_life_mat = life_mat - attack_target_mat
         ic(rem_life_mat)
         next_cells = []
         p1_score = 0
@@ -300,6 +300,7 @@ class Controller:
             is_game_over = True
 
         game_data_dict = asdict(copy.deepcopy(game_data))
+
         game_data_dict['current_state']['player_occupied_cells'] = next_cells
         game_data_dict['current_state']['current_turn'] = game_data.current_state.current_turn + 1
         game_data_dict['score_card'] = ScoreCard(**{'p1_score': p1_score, 'p2_score': p2_score})

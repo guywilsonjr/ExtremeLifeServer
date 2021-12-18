@@ -101,13 +101,26 @@ def test_create_match(username1: str, username2: str, client: TestClient):
                 cell_type=cell_type_map[random.randint(0, 1)],
                 team_number=1,
                 x_loc=0,
-                y_loc=0)]
+                y_loc=0),
+        CellPlacement(
+            cell_type=cell_type_map[random.randint(0, 1)],
+            team_number=1,
+            x_loc=5,
+            y_loc=0)
+    ]
 
     p2_placements = [CellPlacement(
         cell_type=cell_type_map[random.randint(0, 1)],
         team_number=-1,
         x_loc=1,
-        y_loc=0)]
+        y_loc=0),
+
+        CellPlacement(
+            cell_type=cell_type_map[random.randint(0, 1)],
+            team_number=-1,
+            x_loc=3,
+            y_loc=0)
+    ]
     req1 = InitialPlacementRequest(
         user_id=user_id1,
         cell_placements=p1_placements)
@@ -130,7 +143,7 @@ def test_create_match(username1: str, username2: str, client: TestClient):
     ic(gresp.json())
     print_state(GameData(**gresp.json()))
 
-    for i in range(100):
+    for i in range(7):
         client.put(f'/game/{md2.game_id}')
         gresp = client.get(f'/game/{md2.game_id}')
         data_json = gresp.json()
@@ -139,5 +152,5 @@ def test_create_match(username1: str, username2: str, client: TestClient):
         if data.is_game_over:
             break
         print_state(data)
-    print("Turn ended at turn: ", data.current_state.current_turn)
+    print("Turn ended at turn: ", data.current_state.current_turn, "With is game over: ", data.is_game_over)
 
