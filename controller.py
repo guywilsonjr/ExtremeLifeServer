@@ -108,14 +108,16 @@ def get_cell_matrices(game_data: GameData):
     return cell_info_mat, cell_action_mat
 
 
+defense_vec = np.vectorize(get_cell_defense)
+defense_action_vec = np.vectorize(get_cell_defend_action)
+attack_action_vec = np.vectorize(get_cell_attack_action)
+life_vec = np.vectorize(get_cell_life)
+
+
 class Controller:
     def __init__(self):
         self.dm = DataManager()
         self.random = Random(time.time_ns())
-        self.defense_vec = np.vectorize(get_cell_defense)
-        self.defense_action_vec = np.vectorize(get_cell_defend_action)
-        self.attack_action_vec = np.vectorize(get_cell_attack_action)
-        self.life_vec = np.vectorize(get_cell_life)
 
     def update_placements(self, game_id: int, placements: InitialPlacementRequest):
         game_data = self.dm.get_game(game_id)
@@ -256,17 +258,17 @@ class Controller:
         cell_info_mat, cell_action_mat = get_cell_matrices(game_data)
         # print(cell_info_mat)
         # print(cell_action_mat)
-        defense_mat = self.defense_vec(cell_info_mat)
-        attack_target_mat = self.attack_action_vec(cell_action_mat)
+        defense_mat = defense_vec(cell_info_mat)
+        attack_target_mat = attack_action_vec(cell_action_mat)
         ic(attack_target_mat)
-        defense_target_mat = self.defense_action_vec(cell_action_mat)
+        defense_target_mat = defense_action_vec(cell_action_mat)
         effective_defense_mat = defense_mat * defense_target_mat
         calc_mat = attack_target_mat - effective_defense_mat
         # print(calc_mat)
         calc_exp_mat = np.exp2(calc_mat)
         # print(calc_exp_mat)
         # Also could consider using defense*life in calculation
-        life_mat = self.life_vec(cell_info_mat)
+        life_mat = life_vec(cell_info_mat)
         rem_life_mat = life_mat - abs(calc_exp_mat/4)
 
         next_cells = []
