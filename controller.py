@@ -1,6 +1,7 @@
 import copy
 import random
 import time
+import logging
 from dataclasses import asdict
 from random import Random
 from typing import List, Optional
@@ -24,6 +25,8 @@ from model import (
 
 from datamanager import DataManager
 
+logging.getLogger().setLevel(logging.DEBUG)
+
 MAX_TURNS = 100
 
 
@@ -41,7 +44,7 @@ def is_neighbor(cell_info_1: CellInfo, cell_info_2: CellInfo) -> bool:
     if cell_info_1.x_loc == cell_info_2.x_loc and cell_info_1.y_loc == cell_info_2.y_loc:
         return False
     else:
-        return (cell_info_2.x_loc - cell_info_1.x_loc) <= 1 and (cell_info_2.y_loc - cell_info_1.y_loc) <= 1
+        return abs(cell_info_2.x_loc - cell_info_1.x_loc) <= 1 and abs(cell_info_2.y_loc - cell_info_1.y_loc) <= 1
 
 
 def get_cell_neighbors(cell_info: CellInfo, player_occupied_cells: List[CellInfo]) -> List[CellInfo]:
@@ -102,7 +105,10 @@ def get_cell_matrices(game_data: GameData):
         cell_type = cell_types.CELL_MAPPINGS[cur_cell.cell_type]
         cell_info_mat[cur_cell.x_loc][cur_cell.y_loc] = cur_cell
         neighbors = get_cell_neighbors(cur_cell, player_occupied_cells)
+        logging.debug(f"neighbors: {neighbors}")
         action = cell_type.get_action(cur_cell, neighbors)
+        logging.debug(f"cur_cell: {cur_cell}")
+        logging.debug(action)
         cell_action_mat[action.effect_x_loc][action.effect_y_loc] = action
 
     return cell_info_mat, cell_action_mat
@@ -251,23 +257,32 @@ class Controller:
 
 
     def simulate_next_state(self, game_id: int) -> GameData:
+        logging.debug('simulate_next_state')
         game_data = self.dm.get_game(game_id)
+        logging.debug(f'game_data: {game_data}')
         if not game_data:
             raise HTTPException(status_code=404, detail=f'Game not found: {game_id}')
 
         if game_data.is_game_over:
             return game_data
 
+        print('simulate_next_state1')
+
         occupied_cells = copy.deepcopy(game_data.current_state.player_occupied_cells)
+        print(f'occupied_cells: {occupied_cells}')
         cell_info_mat, cell_action_mat = get_cell_matrices(game_data)
         # print(cell_info_mat)
         print(cell_action_mat)
         defense_mat = defense_vec(cell_info_mat)
+        logging.debug(f"cell_action_mat: {cell_action_mat}")
         attack_target_mat = attack_action_vec(cell_action_mat)
+        logging.debug(f"attack_target_mat: {attack_target_mat}")
         ic(attack_target_mat)
         defense_target_mat = defense_action_vec(cell_action_mat)
+        logging.debug(f"defense_target_mat: {defense_target_mat}")
+
         effective_defense_mat = defense_mat * defense_target_mat
-        calc_mat = effective_defense_mat - (attack_target_mat + 5)
+        calc_mat = effective_defense_mat - (attack_target_mat + 6)
         ic(calc_mat)
         calc_exp_mat = np.exp2(calc_mat)
         ic(calc_exp_mat)
@@ -279,12 +294,14 @@ class Controller:
         next_cells = []
         p1_score = 0
         p2_score = 0
+        logging.debug(f'occupied_cells: {occupied_cells}')
         for occ_cell in occupied_cells:
             cell_dict_copy = asdict(copy.deepcopy(occ_cell))
             rem_life = rem_life_mat[occ_cell.x_loc][occ_cell.y_loc]
             if rem_life > 10 ** -3:
                 cell_dict_copy['life'] = rem_life
                 next_cells.append(CellInfo(**cell_dict_copy))
+                logging.debug(f'next_cells: {next_cells}')
                 if occ_cell.team_number == 1:
                     p1_score += rem_life
                 else:

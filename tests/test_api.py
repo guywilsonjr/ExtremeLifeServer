@@ -141,3 +141,76 @@ def test_create_match(username1: str, username2: str, client: TestClient):
         print_state(data)
     print("Turn ended at turn: ", data.current_state.current_turn)
 
+
+def test_simulate_next_step():
+    input_value = 10719
+    expected_value = {
+        "game_id": 10719,
+        "max_turns": 100,
+        "p1_user_id": 43625,
+        "p2_user_id": 59881,
+        "current_state": {
+            "current_turn": 2,
+            "player_occupied_cells": [
+                {
+                    "x_loc": 2,
+                    "y_loc": 9,
+                    "team_number": -1,
+                    "cell_type": "ATTACK",
+                    "life": 1.0,
+                    "resilience": 1.0
+                },
+                {
+                    "x_loc": 3,
+                    "y_loc": 9,
+                    "team_number": -1,
+                    "cell_type": "ATTACK",
+                    "life": 1.0,
+                    "resilience": 1.0
+                },
+                {
+                    "x_loc": 5,
+                    "y_loc": 0,
+                    "team_number": -1,
+                    "cell_type": "ATTACK",
+                    "life": 1.0,
+                    "resilience": 1.0
+                },
+                {
+                    "x_loc": 8,
+                    "y_loc": 0,
+                    "team_number": -1,
+                    "cell_type": "ATTACK",
+                    "life": 1.0,
+                    "resilience": 1.0
+                },
+                {
+                    "x_loc": 5,
+                    "y_loc": 0,
+                    "team_number": 1,
+                    "cell_type": "ATTACK",
+                    "life": 1.0,
+                    "resilience": 1.0
+                },
+                {
+                    "x_loc": 8,
+                    "y_loc": 0,
+                    "team_number": 1,
+                    "cell_type": "ATTACK",
+                    "life": 1.0,
+                    "resilience": 1.0
+                }
+            ]
+        },
+        "awaiting_p1": False,
+        "awaiting_p2": False,
+        "awaiting_placements": True,
+        "score_card": {
+            "p1_score": 0.0,
+            "p2_score": 0.0
+        },
+        "grid_length": 10,
+        "is_game_over": True
+    }
+    output_value = app.simulate_next_step(input_value)
+    assert output_value == expected_value
