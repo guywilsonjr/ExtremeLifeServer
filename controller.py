@@ -27,7 +27,7 @@ MAX_TURNS = 100
 
 
 def print_state(game_data: GameData):
-    positions = {(cinf.x_loc, cinf.y_loc): str(cinf.team_number) +':'+str(cinf.cell_type)[0]+':'+str(cinf.life) for cinf in game_data.current_state.player_occupied_cells}
+    positions = {(cinf.x_loc, cinf.y_loc): str(cinf.life * cinf.team_number) +':'+str(cinf.cell_type)[0] for cinf in game_data.current_state.player_occupied_cells}
     ic(positions)
     glen = game_data.grid_length
     grid = [[0 for i in range(glen)] for j in range(glen)]
@@ -280,7 +280,7 @@ class Controller:
         # print(cell_action_mat)
         defense_mat = self.defense_vec(cell_info_mat)
         attack_target_mat = self.attack_action_vec(cell_action_mat)
-
+        ic(attack_target_mat)
         defense_target_mat = self.defense_action_vec(cell_action_mat)
         effective_defense_mat = defense_mat * defense_target_mat
         calc_mat = attack_target_mat - effective_defense_mat

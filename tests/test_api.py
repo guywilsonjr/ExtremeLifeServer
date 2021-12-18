@@ -76,8 +76,6 @@ def test_create_match(username1: str, username2: str, client: TestClient):
     p2_placements = []
     for i in range(len(available_locs)):
         max_index = len(available_locs) - 1
-        print(max_index)
-        print(i)
         if max_index == 0:
             break
         x, y = available_locs.pop(random.randint(0, max_index) if max_index > 0 else 0)
@@ -121,8 +119,8 @@ def test_create_match(username1: str, username2: str, client: TestClient):
     gresp = client.get(f'/game/{md2.game_id}')
     ic(gresp.json())
     print_state(GameData(**gresp.json()))
-    return
-    for i in range(1):
+
+    for i in range(3):
         client.put(f'/game/{md2.game_id}')
         gresp = client.get(f'/game/{md2.game_id}')
         data_json = gresp.json()

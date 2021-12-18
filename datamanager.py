@@ -49,15 +49,13 @@ class DataManager:
         self.create_entity(game, OLD_GAME_TN)
 
     def update_game(self, game: GameData) -> None:
-        old_game = self.get_game(game.game_id)
-        self.create_old_game(old_game)
         self.remove_game(game.game_id)
         self.create_entity(game, GAME_TN)
 
     def get_game(self, game_id: int) -> Optional[GameData]:
         gq = Query()
-        game_data = self.db.table(GAME_TN).get(gq.game_id == game_id)
-        return GameData(**game_data) if game_data else None
+        game_data = self.db.table(GAME_TN).search(gq.game_id == game_id)
+        return GameData(**game_data[-1]) if game_data else None
 
     def get_games(self) -> List[GameData]:
         return [GameData(**game) for game in self.db.table(GAME_TN).all()]

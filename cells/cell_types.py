@@ -121,10 +121,10 @@ class ViralCell(Cell):
 """
 
 CELL_MAPPINGS = {
-    # 'REPLICATE': ReplicateCell,
+    'REPLICATE': AttackCell,
     'ATTACK': AttackCell,
     'DEFEND': DefenseCell,
-    # 'INFECT': ViralCell
+    'INFECT': DefenseCell
 }
 
 
