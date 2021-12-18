@@ -68,7 +68,7 @@ def test_create_match(username1: str, username2: str, client: TestClient):
     md1 = MatchRequestData(**fmr1resp.json())
     fmr2resp = client.post('/match', json=asdict(fmr2))
     md2 = MatchRequestData(**fmr2resp.json())
-    cell_range = int(GRID_LENGTH * 5 / 7)
+    cell_range = int(GRID_LENGTH * 5 / 7) + 1
 
     available_locs = [(i, j) for i in range(cell_range) for j in range(cell_range)]
     cell_type_map = {1: 'ATTACK', 0: 'DEFEND'}
@@ -121,8 +121,8 @@ def test_create_match(username1: str, username2: str, client: TestClient):
     gresp = client.get(f'/game/{md2.game_id}')
     ic(gresp.json())
     print_state(GameData(**gresp.json()))
-
-    for i in range(3):
+    return
+    for i in range(1):
         client.put(f'/game/{md2.game_id}')
         gresp = client.get(f'/game/{md2.game_id}')
         data_json = gresp.json()

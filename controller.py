@@ -1,3 +1,4 @@
+import copy
 import time
 from dataclasses import asdict
 from random import Random
@@ -26,7 +27,7 @@ MAX_TURNS = 100
 
 
 def print_state(game_data: GameData):
-    positions = {(cinf.x_loc, cinf.y_loc): str(cinf.team_number) +str(cinf.cell_type)[0] for cinf in game_data.current_state.player_occupied_cells}
+    positions = {(cinf.x_loc, cinf.y_loc): str(cinf.team_number) +':'+str(cinf.cell_type)[0]+':'+str(cinf.life) for cinf in game_data.current_state.player_occupied_cells}
     ic(positions)
     glen = game_data.grid_length
     grid = [[0 for i in range(glen)] for j in range(glen)]
@@ -48,8 +49,8 @@ class Controller:
         game_data = self.dm.get_game(game_id)
         if not game_data:
             raise HTTPException(status_code=404, detail=f'Game not found: {game_id}')
-        gcopy = asdict(game_data)
-        team_number = 1 if game_data.p1_user_id == placements.user_id else 2
+        gcopy = asdict(copy.deepcopy(game_data))
+        team_number = 1 if game_data.p1_user_id == placements.user_id else -1
         info_placements = [
             CellInfo(
                 x_loc=pl.x_loc,
@@ -59,6 +60,7 @@ class Controller:
                 life=1.0,
                 resilience=1.0
             ) for pl in placements.cell_placements]
+        info_placements.extend(game_data.current_state.player_occupied_cells)
         gcopy['current_state']['player_occupied_cells'] = info_placements
         if placements.user_id == game_data.p1_user_id:
             gcopy['awaiting_p1'] = False
@@ -274,17 +276,17 @@ class Controller:
 
         occupied_cells = game_data.current_state.player_occupied_cells
         cell_info_mat, cell_action_mat = self.get_cell_matrices(game_data)
-        #print(cell_info_mat)
-        #print(cell_action_mat)
+        # print(cell_info_mat)
+        # print(cell_action_mat)
         defense_mat = self.defense_vec(cell_info_mat)
         attack_target_mat = self.attack_action_vec(cell_action_mat)
 
         defense_target_mat = self.defense_action_vec(cell_action_mat)
         effective_defense_mat = defense_mat * defense_target_mat
         calc_mat = attack_target_mat - effective_defense_mat
-        #print(calc_mat)
+        # print(calc_mat)
         calc_exp_mat = np.exp2(calc_mat)
-        #print(calc_exp_mat)
+        # print(calc_exp_mat)
         # Also could consider using defense*life in calculation
         life_mat = self.life_vec(cell_info_mat)
         rem_life_mat = life_mat - calc_exp_mat/4
@@ -296,6 +298,7 @@ class Controller:
             if rem_life > 0:
                 cell_dict_copy['life'] = rem_life
                 next_cells.append(CellInfo(**cell_dict_copy))
+
         #print(next_cells)
         game_data_dict = asdict(game_data)
         game_data_dict['current_state']['player_occupied_cells'] = next_cells

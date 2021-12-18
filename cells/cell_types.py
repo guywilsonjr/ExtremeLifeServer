@@ -1,3 +1,4 @@
+import random
 from abc import ABCMeta
 from dataclasses import dataclass
 from enum import Enum, auto
@@ -69,7 +70,11 @@ class AttackCell(Cell):
     @staticmethod
     def get_action(cell_info: CellInfo, neighbors: List[CellInfo]) -> CellAction:
         for neigh in neighbors:
-            return CellAction(cell_info, CellActionType.ATTACK_ACTION, neigh.x_loc, neigh.y_loc)
+            if not cell_info.team_number == neigh.team_number:
+                return CellAction(cell_info, CellActionType.ATTACK_ACTION, neigh.x_loc, neigh.y_loc)
+
+        for neigh in neighbors:
+            return CellAction(cell_info, CellActionType.DEFEND_ACTION, neigh.x_loc, neigh.y_loc)
         return CellAction(cell_info, CellActionType.DEFEND_ACTION, cell_info.x_loc, cell_info.y_loc)
 
     @staticmethod
@@ -81,14 +86,20 @@ class DefenseCell(Cell):
     @staticmethod
     def get_action(cell_info: CellInfo, neighbors: List[CellInfo]) -> CellAction:
         for neigh in neighbors:
-            return CellAction(cell_info, CellActionType.ATTACK_ACTION, neigh.x_loc, neigh.y_loc)
+            if cell_info.team_number == neigh.team_number and random.random() > 0.4:
+                return CellAction(cell_info, CellActionType.DEFEND_ACTION, neigh.x_loc, neigh.y_loc)
+
+        for neigh in neighbors:
+            if not cell_info.team_number == neigh.team_number:
+                return CellAction(cell_info, CellActionType.ATTACK_ACTION, neigh.x_loc, neigh.y_loc)
         return CellAction(cell_info, CellActionType.DEFEND_ACTION, cell_info.x_loc, cell_info.y_loc)
+
 
     @staticmethod
     def get_stats() -> DefenseCellStats:
         return DefenseCellStats()
 
-
+"""
 class ReplicateCell(Cell):
     @staticmethod
     def get_action(cell_info: CellInfo, neighbors: List[CellInfo]) -> CellAction:
@@ -107,13 +118,13 @@ class ViralCell(Cell):
     @staticmethod
     def get_stats() -> ViralCellStats:
         return ViralCellStats()
-
+"""
 
 CELL_MAPPINGS = {
-    'REPLICATE': ReplicateCell,
+    # 'REPLICATE': ReplicateCell,
     'ATTACK': AttackCell,
     'DEFEND': DefenseCell,
-    'INFECT': ViralCell
+    # 'INFECT': ViralCell
 }
 
 
