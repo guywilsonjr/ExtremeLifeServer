@@ -23,6 +23,7 @@ from model import (
 
 from datamanager import DataManager
 
+
 MAX_TURNS = 100
 ATTACK_DAMAGE = np.float64(0.2)
 REPLICATION_CHANCE = np.float64(ATTACK_DAMAGE / 2.0)

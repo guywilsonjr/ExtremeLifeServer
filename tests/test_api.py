@@ -1,3 +1,4 @@
+import json
 import os.path
 import random
 import shutil
@@ -11,7 +12,7 @@ from hypothesis.strategies import from_regex
 from fastapi.testclient import TestClient
 from icecream import ic
 
-from controller import print_state
+from controller import print_state, random_gen
 from main import app
 from model import PlayerProfile, InitialPlacementRequest, CellPlacement, FindMatchRequest, MatchRequestData, \
     GRID_LENGTH, GameData
@@ -37,13 +38,13 @@ def test_profile(username: str, client: TestClient):
         [aprof for aprof in response.json()])
 
 
-def get_updated_available_locs(available_locs: List[Tuple[int, int]], grid_length=10) -> Dict[str, int]:
-    myrandom = random.randint(0, 9)
-    next_locs = available_locs
-
 @given(username1=from_regex(r'^\w+\Z'), username2=from_regex(r'^\w+\Z'))
 @settings(max_examples=1, deadline=None)
 def test_create_match(username1: str, username2: str, client: TestClient):
+    rand_seed = 1
+    num_iter = 101
+    randomly_gen_cells = True
+    random_gen.seed(rand_seed)
     ic('Testing full match')
     response = client.post(f'/profile/{username1}')
     prof = PlayerProfile(**response.json())
@@ -70,9 +71,9 @@ def test_create_match(username1: str, username2: str, client: TestClient):
     fmr1resp = client.post('/match', json=asdict(fmr1))
     md1 = MatchRequestData(**fmr1resp.json())
     game_id = md1.game_id
-    cell_range = int(GRID_LENGTH * 5 / 7) + 1
+    num_placements = int(GRID_LENGTH / 2)
 
-    available_locs = [(i, j) for i in range(cell_range) for j in range(cell_range)]
+    available_locs = [(i, j) for i in range(num_placements) for j in range(num_placements)]
     cell_type_map = {1: 'ATTACK', 0: 'DEFEND'}
     p1_placements = []
     p2_placements = []
@@ -99,30 +100,31 @@ def test_create_match(username1: str, username2: str, client: TestClient):
                 x_loc=x,
                 y_loc=y))
 
-    p1_placements = [CellPlacement(
+    if not randomly_gen_cells:
+        p1_placements = [CellPlacement(
+                    cell_type=cell_type_map[random.randint(0, 1)],
+                    team_number=1,
+                    x_loc=0,
+                    y_loc=0),
+            CellPlacement(
                 cell_type=cell_type_map[random.randint(0, 1)],
                 team_number=1,
-                x_loc=0,
-                y_loc=0),
-        CellPlacement(
-            cell_type=cell_type_map[random.randint(0, 1)],
-            team_number=1,
-            x_loc=5,
-            y_loc=0)
-    ]
+                x_loc=5,
+                y_loc=0)
+        ]
 
-    p2_placements = [CellPlacement(
-        cell_type=cell_type_map[random.randint(0, 1)],
-        team_number=-1,
-        x_loc=1,
-        y_loc=0),
-
-        CellPlacement(
+        p2_placements = [CellPlacement(
             cell_type=cell_type_map[random.randint(0, 1)],
             team_number=-1,
-            x_loc=3,
-            y_loc=0)
-    ]
+            x_loc=1,
+            y_loc=0),
+
+            CellPlacement(
+                cell_type=cell_type_map[random.randint(0, 1)],
+                team_number=-1,
+                x_loc=3,
+                y_loc=0)
+        ]
 
     req1 = InitialPlacementRequest(
         user_id=user_id1,
@@ -147,7 +149,7 @@ def test_create_match(username1: str, username2: str, client: TestClient):
     ic(gresp.json())
     print_state(GameData(**gresp.json()))
 
-    for i in range(100):
+    for i in range(num_iter):
         client.put(f'/game/{game_id}')
         gresp = client.get(f'/game/{game_id}')
         data_json = gresp.json()
@@ -156,6 +158,18 @@ def test_create_match(username1: str, username2: str, client: TestClient):
         if data.is_game_over:
             break
         print_state(data)
-        time.sleep(3)
+
+    if randomly_gen_cells:
+        save_loc = f'exp-output-seed-{rand_seed}-iterations-{num_iter}.json'
+    else:
+        save_loc = f'exp-output-numplacements-{num_placements}-seed-{rand_seed}-iterations-{num_iter}.json'
+    if os.path.exists(save_loc):
+        with open(save_loc, 'r') as save_file:
+            expected_json = json.loads(save_file.read())
+            assert expected_json == data_json
+    else:
+        with open(save_loc, 'w') as file:
+            json.dump(data_json, file)
+
     print("Turn ended at turn: ", data.current_state.current_turn, "With is game over: ", data.is_game_over)
 
