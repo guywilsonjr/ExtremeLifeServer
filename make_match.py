@@ -7,9 +7,11 @@ from model import PlayerProfile, FindMatchRequest, MatchRequestData, GRID_LENGTH
 
 num_cells_per_player = 3
 site_url = 'http://localhost:8000'
+site_url = 'https://www.comp680elgame.tk'
 username1 = 'test_user1'
 username2 = 'test_user2'
 response = requests.post(f'{site_url}/profile/{username1}')
+print(response.json())
 prof = PlayerProfile(**response.json())
 user_id1 = prof.user_id
 assert prof.username == username1
@@ -26,15 +28,15 @@ assert filter(
     lambda x: x.username == username2 and x.user_id == prof.user_id,
     [aprof for aprof in response.json()])
 
-fmr1 = FindMatchRequest(user_id=user_id1, action_script_id=0)
-fmr2 = FindMatchRequest(user_id=user_id2, action_script_id=0)
+fmr1 = FindMatchRequest(user_id=user_id2, action_script_id=0)
+fmr2 = FindMatchRequest(user_id=user_id1, action_script_id=0)
 
 fmr1resp = requests.post(f'{site_url}/match', json=asdict(fmr1))
 md1 = MatchRequestData(**fmr1resp.json())
 fmr2resp = requests.post(f'{site_url}/match', json=asdict(fmr2))
 md2 = MatchRequestData(**fmr2resp.json())
 
-
+exit()
 available_locs = [(i, j) for i in range(num_cells_per_player) for j in range(num_cells_per_player)]
 cell_type_map = {1: 'ATTACK', 0: 'DEFEND'}
 p1_placements = []

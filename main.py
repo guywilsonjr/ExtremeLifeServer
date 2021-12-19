@@ -57,7 +57,10 @@ def validate_script(script_name: str, file: UploadFile = File(...)) -> None:
 
 @app.get("/actionscript", response_model=List[ActionScriptMetaResp])
 def list_predefined_actions() -> List[ActionScriptMetaResp]:
-    return [ActionScriptMetaResp(ac.resp.action_script_id, ac.resp.script_name) for ac in dm.list_action_scripts()]
+    return [
+        ActionScriptMetaResp(
+            ac.resp.action_script_id,
+            ac.resp.script_name) for ac in dm.list_action_scripts()]
 
 
 @app.get("/game/{game_id}")
