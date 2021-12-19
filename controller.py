@@ -83,7 +83,7 @@ def get_cell_attack_action(cell_action: Optional[CellAction]) -> np.float64:
 
     if cell_action.effect_type == CellActionType.ATTACK_ACTION:
         ic(f'Attacking cell {cell_action}')
-        return np.float64(20) # np.float64(CELL_MAPPINGS[cell_action.cell_info.cell_type].get_stats().attack) * random_gen.random()
+        return np.float64(0.2) # np.float64(CELL_MAPPINGS[cell_action.cell_info.cell_type].get_stats().attack) * random_gen.random()
     else:
         ic(f'not cell {cell_action}')
 
@@ -129,7 +129,7 @@ class Controller:
                 y_loc=pl.y_loc,
                 team_number=team_number,
                 cell_type=pl.cell_type,
-                life=100.0,
+                life=1.0,
                 resilience=1.0
             ) for pl in placements.cell_placements]
         info_placements.extend(game_data.current_state.player_occupied_cells)
