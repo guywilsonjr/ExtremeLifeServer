@@ -48,46 +48,46 @@ def get_cell_neighbors(cell_info: CellInfo, player_occupied_cells: List[CellInfo
             is_neighbor(cell_info, potential_neighbor)]
 
 
-def get_cell_attack(cell_info: Optional[CellInfo]) -> float:
+def get_cell_attack(cell_info: Optional[CellInfo]) -> np.float64:
     if not cell_info:
-        return 0
+        return np.float64(0.0)
     cell_type = cell_types.CELL_MAPPINGS[cell_info.cell_type]
     return cell_type.get_stats().attack
 
 
-def get_cell_defend_action(cell_action: Optional[CellAction]) -> float:
+def get_cell_defend_action(cell_action: Optional[CellAction]) -> np.float64:
     if not cell_action:
-        return 0
+        return np.float64(0.0)
     defense = CELL_MAPPINGS[cell_action.cell_info.cell_type].get_stats().defense * 2
     if cell_action.effect_type == CellActionType.DEFEND_ACTION:
         return defense * 2
     else:
-        return 0
+        return np.float64(0.0)
 
 
-def get_cell_defense(cell_info: Optional[CellInfo]) -> float:
+def get_cell_defense(cell_info: Optional[CellInfo]) -> np.float64:
     if not cell_info:
-        return 0
+        return np.float64(0.0)
     else:
         return CELL_MAPPINGS[cell_info.cell_type].get_stats().defense
 
 
-def get_cell_life(cell_info: Optional[CellInfo]) -> float:
-    return cell_info.life if cell_info else 0
+def get_cell_life(cell_info: Optional[CellInfo]) -> np.float64:
+    return cell_info.life if cell_info else np.float64(0.0)
 
 
-def get_cell_attack_action(cell_action: Optional[CellAction]) -> float:
+def get_cell_attack_action(cell_action: Optional[CellAction]) -> np.float64:
     if not cell_action:
         ic(f'No cell {cell_action}')
-        return float(0)
+        return np.float64(0.0)
 
     if cell_action.effect_type == CellActionType.ATTACK_ACTION:
         ic(f'Attacking cell {cell_action}')
-        return float(0.2) # float(CELL_MAPPINGS[cell_action.cell_info.cell_type].get_stats().attack) * random_gen.random()
+        return np.float64(0.2) # np.float64(CELL_MAPPINGS[cell_action.cell_info.cell_type].get_stats().attack) * random_gen.random()
     else:
         ic(f'not cell {cell_action}')
 
-        return float(0)
+        return np.float64(0.0)
 
 
 def get_cell_matrices(game_data: GameData):
@@ -108,7 +108,7 @@ def get_cell_matrices(game_data: GameData):
 
 defense_vec = np.vectorize(get_cell_defense)
 defense_action_vec = np.vectorize(get_cell_defend_action)
-attack_action_vec = np.vectorize(get_cell_attack_action, otypes=[float])
+attack_action_vec = np.vectorize(get_cell_attack_action, otypes=[np.float64])
 life_vec = np.vectorize(get_cell_life)
 random_gen = Random(time.time_ns())
 
@@ -277,8 +277,8 @@ class Controller:
         rem_life_mat = life_mat - attack_target_mat
         ic(rem_life_mat)
         next_cells = []
-        p1_score = 0
-        p2_score = 0
+        p1_score = float(0.0)
+        p2_score = float(0.0)
         for occ_cell in occupied_cells:
             cell_dict_copy = asdict(copy.deepcopy(occ_cell))
             rem_life = rem_life_mat[occ_cell.x_loc][occ_cell.y_loc]
@@ -292,9 +292,9 @@ class Controller:
 
 
         is_game_over = False
-        if p1_score == 0:
+        if p1_score == np.float64(0.0):
             is_game_over = True
-        elif p2_score == 0:
+        elif p2_score == np.float64(0.0):
             is_game_over = True
         elif game_data.current_state.current_turn >= game_data.max_turns:
             is_game_over = True
