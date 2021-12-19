@@ -77,18 +77,17 @@ def get_cell_life(cell_info: Optional[CellInfo]) -> float:
 
 
 def get_cell_attack_action(cell_action: Optional[CellAction]) -> float:
-
     if not cell_action:
         ic(f'No cell {cell_action}')
-        return 0
+        return float(0)
 
     if cell_action.effect_type == CellActionType.ATTACK_ACTION:
         ic(f'Attacking cell {cell_action}')
-        return 0.2 # float(CELL_MAPPINGS[cell_action.cell_info.cell_type].get_stats().attack) * random_gen.random()
+        return float(0.2) # float(CELL_MAPPINGS[cell_action.cell_info.cell_type].get_stats().attack) * random_gen.random()
     else:
         ic(f'not cell {cell_action}')
 
-        return 0
+        return float(0)
 
 
 def get_cell_matrices(game_data: GameData):
@@ -109,7 +108,7 @@ def get_cell_matrices(game_data: GameData):
 
 defense_vec = np.vectorize(get_cell_defense)
 defense_action_vec = np.vectorize(get_cell_defend_action)
-attack_action_vec = np.vectorize(get_cell_attack_action)
+attack_action_vec = np.vectorize(get_cell_attack_action, otypes=[float])
 life_vec = np.vectorize(get_cell_life)
 random_gen = Random(time.time_ns())
 
