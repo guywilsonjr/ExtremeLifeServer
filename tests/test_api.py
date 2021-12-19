@@ -1,6 +1,7 @@
 import os.path
 import random
 import shutil
+import time
 from dataclasses import asdict
 from typing import Tuple, List, Dict
 
@@ -43,6 +44,7 @@ def get_updated_available_locs(available_locs: List[Tuple[int, int]], grid_lengt
 @given(username1=from_regex(r'^\w+\Z'), username2=from_regex(r'^\w+\Z'))
 @settings(max_examples=1, deadline=None)
 def test_create_match(username1: str, username2: str, client: TestClient):
+    ic('Testing full match')
     response = client.post(f'/profile/{username1}')
     prof = PlayerProfile(**response.json())
     user_id1 = prof.user_id
@@ -63,10 +65,11 @@ def test_create_match(username1: str, username2: str, client: TestClient):
     fmr1 = FindMatchRequest(user_id=user_id1, action_script_id=0)
     fmr2 = FindMatchRequest(user_id=user_id2, action_script_id=0)
 
-    fmr1resp = client.post('/match', json=asdict(fmr1))
-    md1 = MatchRequestData(**fmr1resp.json())
     fmr2resp = client.post('/match', json=asdict(fmr2))
     md2 = MatchRequestData(**fmr2resp.json())
+    fmr1resp = client.post('/match', json=asdict(fmr1))
+    md1 = MatchRequestData(**fmr1resp.json())
+    game_id = md1.game_id
     cell_range = int(GRID_LENGTH * 5 / 7) + 1
 
     available_locs = [(i, j) for i in range(cell_range) for j in range(cell_range)]
@@ -132,25 +135,27 @@ def test_create_match(username1: str, username2: str, client: TestClient):
 
     ic(asdict(req1))
     ic(asdict(req2))
-    client.patch(f'/game/{md2.game_id}', json=asdict(req1))
-    gresp = client.get(f'/game/{md2.game_id}')
+    client.patch(f'/game/{game_id}', json=asdict(req1))
+    gresp = client.get(f'/game/{game_id}')
+    ic(gresp.content)
     print_state(GameData(**gresp.json()))
 
-    client.patch(f'/game/{md2.game_id}', json=asdict(req2))
-    gresp = client.get(f'/game/{md2.game_id}')
+    client.patch(f'/game/{game_id}', json=asdict(req2))
+    gresp = client.get(f'/game/{game_id}')
     print_state(GameData(**gresp.json()))
-    gresp = client.get(f'/game/{md2.game_id}')
+    gresp = client.get(f'/game/{game_id}')
     ic(gresp.json())
     print_state(GameData(**gresp.json()))
 
-    for i in range(4):
-        client.put(f'/game/{md2.game_id}')
-        gresp = client.get(f'/game/{md2.game_id}')
+    for i in range(100):
+        client.put(f'/game/{game_id}')
+        gresp = client.get(f'/game/{game_id}')
         data_json = gresp.json()
 
         data = GameData(**data_json)
         if data.is_game_over:
             break
         print_state(data)
+        time.sleep(3)
     print("Turn ended at turn: ", data.current_state.current_turn, "With is game over: ", data.is_game_over)
 

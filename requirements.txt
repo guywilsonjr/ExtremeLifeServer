@@ -6,3 +6,4 @@ tinydb
 python-multipart
 icecream
 pymysql
+cryptography

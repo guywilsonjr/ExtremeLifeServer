@@ -2,7 +2,7 @@ import copy
 import time
 from dataclasses import asdict
 from random import Random
-from typing import List, Optional
+from typing import List, Optional, Tuple, Dict
 
 from fastapi import UploadFile, File
 from icecream import ic
@@ -19,16 +19,19 @@ from model import (
     MatchRequestData,
     PlayerProfile,
     ActionScriptMetaResp,
-    ActionScriptMeta, InitialPlacementRequest, CellInfo, ScoreCard)
+    ActionScriptMeta, InitialPlacementRequest, CellInfo, ScoreCard, GRID_LENGTH)
 
 from datamanager import DataManager
 
 MAX_TURNS = 100
+ATTACK_DAMAGE = np.float64(0.2)
+REPLICATION_CHANCE = np.float64(ATTACK_DAMAGE / 2.0)
+STANDARD_LIFE = 1.0
+STANDARD_RESILIENCE = STANDARD_LIFE
 
 
 def print_state(game_data: GameData):
     positions = {(cinf.x_loc, cinf.y_loc): str(cinf.life * cinf.team_number) +':'+str(cinf.cell_type)[0] for cinf in game_data.current_state.player_occupied_cells}
-    #ic(positions)
     glen = game_data.grid_length
     grid = [[0 for i in range(glen)] for j in range(glen)]
     for (x_loc, y_loc), team_number in positions.items():
@@ -78,14 +81,11 @@ def get_cell_life(cell_info: Optional[CellInfo]) -> np.float64:
 
 def get_cell_attack_action(cell_action: Optional[CellAction]) -> np.float64:
     if not cell_action:
-        ic(f'No cell {cell_action}')
         return np.float64(0.0)
 
     if cell_action.effect_type == CellActionType.ATTACK_ACTION:
-        ic(f'Attacking cell {cell_action}')
-        return np.float64(0.2) # np.float64(CELL_MAPPINGS[cell_action.cell_info.cell_type].get_stats().attack) * random_gen.random()
+        return ATTACK_DAMAGE # np.float64(CELL_MAPPINGS[cell_action.cell_info.cell_type].get_stats().attack) * random_gen.random()
     else:
-        ic(f'not cell {cell_action}')
 
         return np.float64(0.0)
 
@@ -112,10 +112,127 @@ attack_action_vec = np.vectorize(get_cell_attack_action, otypes=[np.float64])
 life_vec = np.vectorize(get_cell_life)
 random_gen = Random(time.time_ns())
 
+
+def get_adjacent_loc_tuples(x_loc: int, y_loc: int) -> List[Tuple[int, int]]:
+    adjacent_locs = []
+    left_loc = (x_loc - 1, y_loc) if x_loc - 1 > 0 else None
+    right_loc = (x_loc + 1, y_loc) if x_loc < GRID_LENGTH - 1 else None
+    down_loc = (x_loc, y_loc - 1) if y_loc - 1 > 0 else None
+    up_loc = (x_loc, y_loc + 1) if y_loc < GRID_LENGTH - 1 else None
+
+    if left_loc:
+        adjacent_locs.append(left_loc)
+    if right_loc:
+        adjacent_locs.append(right_loc)
+    if down_loc:
+        adjacent_locs.append(down_loc)
+    if up_loc:
+        adjacent_locs.append(up_loc)
+
+    return adjacent_locs
+
+
+def get_cells_by_team(occ_cell_list: List[CellInfo], team: int):
+    ic(occ_cell_list)
+    return [occ_cell for occ_cell in occ_cell_list if occ_cell.team_number == team]
+
+
+def get_cells_by_type(occ_cell_list: List[CellInfo], cell_type: str):
+    return [occ_cell for occ_cell in occ_cell_list if occ_cell.cell_type == cell_type]
+
+
+def get_replicated_cell(repl_loc: tuple, occ_cell_list: List[CellInfo], team_num: int):
+    team_cells = get_cells_by_team(occ_cell_list, team_num)
+    if len(team_cells) == 0:
+        return None
+
+    number_of_team_neighbors = len(team_cells)
+    chance_to_replicate = REPLICATION_CHANCE * number_of_team_neighbors
+
+    attack_cells = get_cells_by_type(team_cells, "ATTACK")
+    defend_cells = get_cells_by_type(team_cells, "DEFEND")
+    num_attack_cells = len(attack_cells)
+    num_defend_cells = len(defend_cells)
+    new_cell_type = "DEFEND"
+    if num_attack_cells > 0 and num_defend_cells > 0:
+        new_cell_type = "DEFEND"
+        if random_gen.random() < num_attack_cells/number_of_team_neighbors:
+            new_cell_type = "ATTACK"
+    elif num_defend_cells < 1:
+        new_cell_type = "ATTACK"
+    elif num_attack_cells > 0:
+        new_cell_type = "ATTACK"
+    elif num_defend_cells > 0:
+        new_cell_type = "DEFEND"
+
+    # chance to replicate. More cells nearby means more chance
+    if random_gen.random() < chance_to_replicate:
+        new_cell = CellInfo(
+            x_loc=repl_loc[0],
+            y_loc=repl_loc[1],
+            team_number=team_num,
+            life=STANDARD_LIFE,
+            resilience=STANDARD_RESILIENCE,
+            cell_type=new_cell_type)
+        return new_cell
+    else:
+        return None
+
+
+def get_replicated_cells(occupied_cells: List[CellInfo]):
+    occ_cell_map = dict()
+    # Map cell locations to occupied cells
+    for occ_cell in occupied_cells:
+        occ_cell_map[(occ_cell.x_loc, occ_cell.y_loc)] = occ_cell
+
+    # get the locations surrounding all occupied cells
+    locs_to_check = []
+    for loc_tuple, occ_cell in occ_cell_map.items():
+        x_loc = loc_tuple[0]
+        y_loc = loc_tuple[1]
+        adjacent_locs = get_adjacent_loc_tuples(x_loc, y_loc)
+        locs_to_check.extend(adjacent_locs)
+
+    # From those locations select the non-occupied locations
+    replicatable_locs = [loc for loc in locs_to_check if not loc in occ_cell_map]
+
+    # Now create a map to map the replicatable locations to a list of their surrounding occupied cells
+    open_loc_map_to_occ_neighbors: Dict[Tuple[int, int], List[CellInfo]] = dict()
+    for open_repl_loc in replicatable_locs:
+        x_loc = open_repl_loc[0]
+        y_loc = open_repl_loc[1]
+        spots_to_check_for_cells = get_adjacent_loc_tuples(x_loc, y_loc)
+        open_loc_map_to_occ_neighbors[open_repl_loc] = [occ_cell_map[spot] for spot in spots_to_check_for_cells if spot in occ_cell_map]
+
+    ic(open_loc_map_to_occ_neighbors)
+    replicated_cells = []
+    for repl_loc, occ_cell_list in open_loc_map_to_occ_neighbors.items():
+        first_dibs_team = 1 if random_gen.random() < 0.5 else -1
+        second_dibs_team = 1 if first_dibs_team == -1 else 1
+        potential_first_dibs_cell = get_replicated_cell(repl_loc, occ_cell_list, first_dibs_team)
+        if potential_first_dibs_cell:
+            # First team got it. Continue on to try again at the next location
+            ic(f'Adding replication for team {first_dibs_team}')
+            replicated_cells.append(potential_first_dibs_cell)
+            continue
+        else:
+            ic(f'Adding replication for team {second_dibs_team}')
+            potential_second_dibs_cell = get_replicated_cell(repl_loc, occ_cell_list, second_dibs_team)
+            if potential_second_dibs_cell:
+                replicated_cells.append(potential_second_dibs_cell)
+
+    for rep_cell in replicated_cells:
+
+        if (rep_cell.x_loc, rep_cell.y_loc) in occ_cell_map:
+            conflicting_cell = occ_cell_map[(rep_cell.x_loc, rep_cell.y_loc)]
+            ic(f"ISSUE FOUND REPLICATION CELL: {rep_cell} conflicting with existing cell {conflicting_cell}")
+
+    return replicated_cells
+
+
 class Controller:
     def __init__(self):
         self.dm = DataManager()
-
 
     def update_placements(self, game_id: int, placements: InitialPlacementRequest):
         game_data = self.dm.get_game(game_id)
@@ -129,8 +246,8 @@ class Controller:
                 y_loc=pl.y_loc,
                 team_number=team_number,
                 cell_type=pl.cell_type,
-                life=1.0,
-                resilience=1.0
+                life=STANDARD_LIFE,
+                resilience=STANDARD_RESILIENCE
             ) for pl in placements.cell_placements]
         info_placements.extend(game_data.current_state.player_occupied_cells)
         gcopy['current_state']['player_occupied_cells'] = info_placements
@@ -247,7 +364,6 @@ class Controller:
                     ic('Matches updated')
         return existing_player_req
 
-
     def simulate_next_state(self, game_id: int) -> GameData:
         game_data = self.dm.get_game(game_id)
         if not game_data:
@@ -258,27 +374,17 @@ class Controller:
 
         occupied_cells = copy.deepcopy(game_data.current_state.player_occupied_cells)
         cell_info_mat, cell_action_mat = get_cell_matrices(game_data)
-        # print(cell_info_mat)
-        print(cell_action_mat)
+        #ic(cell_action_mat)
         defense_mat = defense_vec(cell_info_mat)
         attack_target_mat = attack_action_vec(cell_action_mat)
-        ic(attack_target_mat)
-
-        #defense_target_mat = defense_action_vec(cell_action_mat)
-        #effective_defense_mat = defense_mat * defense_target_mat
-        #calc_mat = effective_defense_mat - (attack_target_mat + 5)
-        #ic(calc_mat)
-        #calc_exp_mat = np.exp2(calc_mat)
-        #ic(calc_exp_mat)
-        # Also could consider using defense*life in calculation
-
+        #ic(attack_target_mat)
         life_mat = life_vec(cell_info_mat) * defense_mat
-        ic(life_mat)
+        #ic(life_mat)
         rem_life_mat = life_mat - attack_target_mat
-        ic(rem_life_mat)
+        #ic(rem_life_mat)
         next_cells = []
-        p1_score = float(0.0)
-        p2_score = float(0.0)
+        p1_score = 0
+        p2_score = 0
         for occ_cell in occupied_cells:
             cell_dict_copy = asdict(copy.deepcopy(occ_cell))
             rem_life = rem_life_mat[occ_cell.x_loc][occ_cell.y_loc]
@@ -290,14 +396,25 @@ class Controller:
                 else:
                     p2_score += rem_life
 
-
         is_game_over = False
-        if p1_score == np.float64(0.0):
+        if p1_score == 0:
             is_game_over = True
-        elif p2_score == np.float64(0.0):
+        elif p2_score == 0:
             is_game_over = True
         elif game_data.current_state.current_turn >= game_data.max_turns:
             is_game_over = True
+
+        # If game is not over Do replication step
+        next_replicated_cells = get_replicated_cells(next_cells)
+        for repl_cell in next_replicated_cells:
+            if repl_cell == None:
+                ic('ISSUE: Some replicated cells are null')
+            else:
+                next_cells.append(repl_cell)
+                if repl_cell.team_number == 1:
+                    p1_score += repl_cell.life
+                else:
+                    p2_score += repl_cell.life
 
         game_data_dict = asdict(copy.deepcopy(game_data))
 
