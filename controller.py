@@ -29,7 +29,7 @@ MAX_TURNS = 100
 
 def print_state(game_data: GameData):
     positions = {(cinf.x_loc, cinf.y_loc): str(cinf.life * cinf.team_number) +':'+str(cinf.cell_type)[0] for cinf in game_data.current_state.player_occupied_cells}
-    ic(positions)
+    #ic(positions)
     glen = game_data.grid_length
     grid = [[0 for i in range(glen)] for j in range(glen)]
     for (x_loc, y_loc), team_number in positions.items():
@@ -49,13 +49,11 @@ def get_cell_neighbors(cell_info: CellInfo, player_occupied_cells: List[CellInfo
             is_neighbor(cell_info, potential_neighbor)]
 
 
-
 def get_cell_attack(cell_info: Optional[CellInfo]) -> float:
     if not cell_info:
         return 0
     cell_type = cell_types.CELL_MAPPINGS[cell_info.cell_type]
     return cell_type.get_stats().attack
-
 
 
 def get_cell_defend_action(cell_action: Optional[CellAction]) -> float:
@@ -66,7 +64,6 @@ def get_cell_defend_action(cell_action: Optional[CellAction]) -> float:
         return defense * 2
     else:
         return 0
-
 
 
 def get_cell_defense(cell_info: Optional[CellInfo]) -> float:
@@ -266,7 +263,7 @@ class Controller:
         attack_target_mat = attack_action_vec(cell_action_mat)
         ic(attack_target_mat)
         defense_target_mat = defense_action_vec(cell_action_mat)
-        effective_defense_mat = defense_mat * defense_target_mat
+        #effective_defense_mat = defense_mat * defense_target_mat
         #calc_mat = effective_defense_mat - (attack_target_mat + 5)
         #ic(calc_mat)
         #calc_exp_mat = np.exp2(calc_mat)

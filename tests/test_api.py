@@ -121,6 +121,7 @@ def test_create_match(username1: str, username2: str, client: TestClient):
             x_loc=3,
             y_loc=0)
     ]
+
     req1 = InitialPlacementRequest(
         user_id=user_id1,
         cell_placements=p1_placements)
@@ -143,7 +144,7 @@ def test_create_match(username1: str, username2: str, client: TestClient):
     ic(gresp.json())
     print_state(GameData(**gresp.json()))
 
-    for i in range(7):
+    for i in range(101):
         client.put(f'/game/{md2.game_id}')
         gresp = client.get(f'/game/{md2.game_id}')
         data_json = gresp.json()
