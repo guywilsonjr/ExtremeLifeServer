@@ -1,5 +1,4 @@
 import copy
-import random
 import time
 from dataclasses import asdict
 from random import Random
@@ -73,19 +72,22 @@ def get_cell_defense(cell_info: Optional[CellInfo]) -> float:
         return CELL_MAPPINGS[cell_info.cell_type].get_stats().defense
 
 
-
 def get_cell_life(cell_info: Optional[CellInfo]) -> float:
     return cell_info.life if cell_info else 0
 
 
-
 def get_cell_attack_action(cell_action: Optional[CellAction]) -> float:
+
     if not cell_action:
+        ic(f'No cell {cell_action}')
         return 0
 
     if cell_action.effect_type == CellActionType.ATTACK_ACTION:
+        ic(f'Attacking cell {cell_action}')
         return 0.2 # float(CELL_MAPPINGS[cell_action.cell_info.cell_type].get_stats().attack) * random_gen.random()
     else:
+        ic(f'not cell {cell_action}')
+
         return 0
 
 
@@ -262,13 +264,15 @@ class Controller:
         defense_mat = defense_vec(cell_info_mat)
         attack_target_mat = attack_action_vec(cell_action_mat)
         ic(attack_target_mat)
-        defense_target_mat = defense_action_vec(cell_action_mat)
+
+        #defense_target_mat = defense_action_vec(cell_action_mat)
         #effective_defense_mat = defense_mat * defense_target_mat
         #calc_mat = effective_defense_mat - (attack_target_mat + 5)
         #ic(calc_mat)
         #calc_exp_mat = np.exp2(calc_mat)
         #ic(calc_exp_mat)
         # Also could consider using defense*life in calculation
+
         life_mat = life_vec(cell_info_mat) * defense_mat
         ic(life_mat)
         rem_life_mat = life_mat - attack_target_mat
