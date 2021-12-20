@@ -7,7 +7,7 @@ else:
     from pydantic.dataclasses import dataclass
 
 
-GRID_LENGTH: int = 10
+GRID_LENGTH: int = 5
 
 
 @dataclass
